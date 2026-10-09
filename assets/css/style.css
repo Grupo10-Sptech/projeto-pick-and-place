@@ -134,6 +134,62 @@ button {
   box-shadow: 0 0 12px rgba(74, 169, 127, 0.7);
 }
 
+.status-badge.alert,
+.status-badge.offline {
+  background: rgba(215, 91, 91, 0.12);
+  border-color: rgba(215, 91, 91, 0.4);
+  color: var(--danger);
+}
+
+.status-badge.alert .dot,
+.status-badge.offline .dot {
+  background: var(--danger);
+  box-shadow: 0 0 12px rgba(215, 91, 91, 0.55);
+}
+
+.alert-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border: 1px solid rgba(215, 91, 91, 0.45);
+  border-left: 5px solid var(--danger);
+  border-radius: 14px;
+  background: rgba(215, 91, 91, 0.1);
+  color: var(--navy);
+}
+
+.alert-banner[hidden] {
+  display: none;
+}
+
+.alert-banner strong {
+  color: var(--danger);
+}
+
+.alert-banner p {
+  margin: 5px 0 0;
+  line-height: 1.45;
+}
+
+.alert-banner button {
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border: 1px solid rgba(215, 91, 91, 0.45);
+  border-radius: 9px;
+  background: var(--white);
+  color: var(--danger);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.alert-banner button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .views {
   display: block;
   height: calc(100vh - 110px);
@@ -144,7 +200,8 @@ button {
   display: none;
   height: 100%;
   animation: fadeIn 0.25s ease;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .view-panel.active {
@@ -712,6 +769,11 @@ button {
     width: 100%;
     justify-content: center;
     padding: 8px 12px;
+  }
+
+  .alert-banner {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .hero-card {

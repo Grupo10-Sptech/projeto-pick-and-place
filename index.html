@@ -23,9 +23,9 @@
         </nav>
 
         <div class="status-group">
-          <div class="status-badge">
-            <span class="dot"></span>
-            Sistema ativo
+          <div class="status-badge" id="systemStatus">
+            <span class="dot" id="statusDot"></span>
+            <span id="statusText">Sistema ativo</span>
           </div>
         </div>
       </header>
@@ -39,6 +39,7 @@
             <div class="metrics-inline">
               <span><strong>2 sensores</strong> IoT em operação</span>
               <span id="sampleCounter"><strong>0</strong> amostras coletadas</span>
+              <span>Gráficos e indicadores: últimos 60 segundos</span>
             </div>
           </section>
 
@@ -69,6 +70,14 @@
               <div class="kpi-value" id="healthIndex">--</div>
               <div class="kpi-foot">Escala 0 a 100</div>
             </article>
+          </section>
+
+          <section class="alert-banner" id="sensorAlert" role="alert" aria-live="assertive" hidden>
+            <div>
+              <strong id="alertTitle">Alerta dos sensores</strong>
+              <p id="alertMessage"></p>
+            </div>
+            <button id="acknowledgeAlert" type="button">Reconhecer alerta</button>
           </section>
 
           <section class="chart-grid">

@@ -9,6 +9,8 @@ random.seed(42)
 
 base_dir = Path(__file__).resolve().parent.parent
 output_file = base_dir / "data" / "sensor_data.json"
+TEMPERATURE_THRESHOLD_C = 38.0
+VIBRATION_THRESHOLD_G = 1.2
 
 
 def generate_temperature(index: int, drift: float = 0.0) -> float:
@@ -28,6 +30,19 @@ def generate_vibration(index: int, drift: float = 0.0) -> float:
     spike = 0.38 if index % 53 == 0 else 0.0
     value = base + harmonic + medium_noise + jitter + spike
     return round(max(0.18, value), 3)
+
+
+def generate_live_sample(index: int) -> tuple[float, float]:
+    drift_factor = 0.12 * math.sin(index / 60.0)
+    temperature = generate_temperature(index, drift_factor)
+    vibration = generate_vibration(index, drift_factor * 0.35)
+
+    anomaly_phase = (index - 20) % 120
+    if index >= 20 and anomaly_phase < 8:
+        temperature = round(temperature + 10.0, 2)
+        vibration = round(vibration + 0.8, 3)
+
+    return temperature, vibration
 
 
 def average(values):
@@ -84,7 +99,7 @@ def main() -> None:
             "unit": "°C",
             "values": temperatures,
             "timestamps": timestamps,
-            "threshold": 38.0,
+            "threshold": TEMPERATURE_THRESHOLD_C,
             "avg": round(temp_avg, 2),
             "max": round(temp_max, 2),
         },
@@ -93,7 +108,7 @@ def main() -> None:
             "unit": "g",
             "values": vibrations,
             "timestamps": timestamps,
-            "threshold": 1.2,
+            "threshold": VIBRATION_THRESHOLD_G,
             "avg": round(vib_avg, 3),
             "max": round(vib_max, 3),
         },

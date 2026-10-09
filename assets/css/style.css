@@ -50,7 +50,27 @@ button {
 }
 
 .title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex: 1 1 260px;
+}
+
+.brand-logo {
+  display: none;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.brand-logo-dark {
+  display: block;
+  width: 82px;
+  height: 54px;
+}
+
+.brand-logo-light {
+  width: 82px;
+  height: 54px;
 }
 
 .eyebrow,
@@ -1383,11 +1403,11 @@ button:focus-visible {
   max-width: none;
   padding: 0;
   overflow: visible;
-  border: 1px solid rgba(255, 104, 130, 0.7);
+  border: 0;
   border-radius: 24px;
   background: transparent;
   color: #f7e8ec;
-  box-shadow: 0 0 0 1px rgba(255, 104, 130, 0.16), 0 24px 100px rgba(0, 0, 0, 0.62), 0 0 60px rgba(255, 52, 93, 0.24);
+  box-shadow: 0 24px 100px rgba(0, 0, 0, 0.62), 0 0 60px rgba(255, 52, 93, 0.24);
 }
 
 .alert-modal::backdrop {
@@ -1416,11 +1436,30 @@ button:focus-visible {
 
 .alert-modal-card::before {
   position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, #ff466d, #ffb454, #ff466d, transparent);
+  inset: 0;
+  border: 3px solid transparent;
+  border-radius: inherit;
+  background:
+    linear-gradient(145deg, #1c1724, #111827 72%) padding-box,
+    conic-gradient(
+      from var(--alert-border-angle),
+      transparent 0deg 205deg,
+      rgba(255, 70, 109, 0.18) 232deg,
+      #ff466d 258deg,
+      #ffb454 292deg,
+      #42dfd0 326deg,
+      #82aaff 348deg,
+      transparent 360deg
+    ) border-box;
   content: "";
-  animation: alertGlow 1.8s linear infinite;
+  filter: drop-shadow(0 0 5px rgba(255, 70, 109, 0.55));
+  pointer-events: none;
+  animation: alertBorderSpin 2.4s linear infinite;
+}
+
+.alert-modal-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .alert-modal-icon {
@@ -1502,9 +1541,14 @@ button:focus-visible {
   50% { box-shadow: 0 0 48px rgba(255, 62, 97, 0.5), inset 0 0 24px rgba(255, 62, 97, 0.2); }
 }
 
-@keyframes alertGlow {
-  0% { transform: translateX(-35%); }
-  100% { transform: translateX(35%); }
+@property --alert-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes alertBorderSpin {
+  to { --alert-border-angle: 360deg; }
 }
 
 @media (max-width: 480px) {
@@ -1593,6 +1637,18 @@ html[data-theme="light"] body {
 html[data-theme="light"] .topbar h1 {
   color: #163954;
   text-shadow: 0 0 24px rgba(38, 173, 185, 0.12);
+}
+
+html[data-theme="light"] .brand-logo-light {
+  display: block;
+}
+
+html[data-theme="light"] .brand-logo-dark {
+  display: none;
+}
+
+html[data-theme="light"] .title-wrap {
+  min-width: 0;
 }
 
 html[data-theme="light"] .status-badge {
@@ -1748,9 +1804,22 @@ html[data-theme="light"] .chip-teal {
 }
 
 html[data-theme="light"] .alert-modal-card {
+  background: #ffffff;
+}
+
+html[data-theme="light"] .alert-modal-card::before {
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(255, 82, 111, 0.11), transparent 58%),
-    linear-gradient(145deg, #ffffff, #fff7f8 72%);
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    conic-gradient(
+      from var(--alert-border-angle),
+      transparent 0deg 205deg,
+      rgba(255, 70, 109, 0.18) 232deg,
+      #ff466d 258deg,
+      #ffb454 292deg,
+      #08a99d 326deg,
+      #527bea 348deg,
+      transparent 360deg
+    ) border-box;
 }
 
 html[data-theme="light"] .alert-modal-title {

@@ -9,6 +9,47 @@ const average = (values) => values.reduce((sum, value) => sum + value, 0) / valu
 
 const rms = (values) => Math.sqrt(values.reduce((sum, value) => sum + value * value, 0) / values.length);
 
+function applyTheme(theme) {
+  const isLight = theme === 'light';
+  document.documentElement.dataset.theme = isLight ? 'light' : 'dark';
+  const toggle = document.getElementById('themeToggle');
+  if (toggle) {
+    const label = isLight ? 'Ativar tema escuro' : 'Ativar tema claro';
+    toggle.setAttribute('aria-label', label);
+    toggle.setAttribute('title', label);
+  }
+
+  if (tempChart && vibChart) {
+    const chartTextColor = isLight ? '#5b6b7d' : '#9aafc8';
+    const gridColor = isLight ? 'rgba(48, 71, 98, 0.12)' : 'rgba(142, 174, 208, 0.12)';
+    const chartColors = isLight ? ['#008f86', '#426fd0'] : ['#42dfd0', '#82aaff'];
+
+    [tempChart, vibChart].forEach((chart, index) => {
+      chart.options.scales.x.ticks.color = chartTextColor;
+      chart.options.scales.y.ticks.color = chartTextColor;
+      chart.options.scales.y.grid.color = gridColor;
+      chart.options.plugins.tooltip.titleColor = isLight ? '#ffffff' : '#eaf4ff';
+      chart.options.plugins.tooltip.bodyColor = isLight ? '#e1eaf4' : '#c4d6e9';
+      chart.data.datasets[0].borderColor = chartColors[index];
+      chart.data.datasets[0].backgroundColor = index === 0
+        ? `${chartColors[index]}33`
+        : 'transparent';
+      chart.update('none');
+    });
+  }
+}
+
+function setupThemeToggle() {
+  const savedTheme = localStorage.getItem('pick-and-place-theme');
+  applyTheme(savedTheme === 'light' ? 'light' : 'dark');
+
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('pick-and-place-theme', nextTheme);
+    applyTheme(nextTheme);
+  });
+}
+
 const buildChartConfig = (type, labels, values, label, color, fill = false) => ({
   type,
   data: {
@@ -139,7 +180,7 @@ function renderAlert() {
   const acknowledgeButton = document.getElementById('acknowledgeAlert');
   if (!alert || !title || !message || !acknowledgeButton) return;
 
-  alert.hidden = !alertPending;
+  if (alertPending && !alert.open) alert.showModal();
   acknowledgeButton.disabled = conditionActive;
   if (alertPending && latestAlert) {
     title.textContent = conditionActive ? 'Alerta: temperatura e vibração elevadas' : 'Alerta registrado';
@@ -192,7 +233,12 @@ function updateLiveWindow(samples, totalSamples, incidentsToday) {
   temperatureThreshold = latestSample.temperature_threshold;
   vibrationThreshold = latestSample.vibration_threshold;
   sampleCount = totalSamples;
-  document.getElementById('incidentCountToday').textContent = incidentsToday.toLocaleString('pt-BR');
+  document.getElementById('incidentCountToday').textContent = Number.isInteger(incidentsToday)
+    ? incidentsToday.toLocaleString('pt-BR')
+    : '--';
+  document.getElementById('incidentCountHelp').textContent = Number.isInteger(incidentsToday)
+    ? 'Ocorrências registradas'
+    : 'Reinicie o servidor para ativar';
   updateSummary(sampleCount);
   updateKpis(temperatureValues, vibrationValues);
   tempChart.update('none');
@@ -204,12 +250,12 @@ async function pollLiveSample() {
     const response = await fetch(liveSampleUrl, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Erro ao coletar leitura: ${response.status}`);
     const payload = await response.json();
+    const hasIncidentCount = Number.isInteger(payload.incidents_today) && payload.incidents_today >= 0;
     if (
       !Array.isArray(payload.samples) ||
       payload.samples.length === 0 ||
       !Number.isFinite(payload.total_samples) ||
-      !Number.isInteger(payload.incidents_today) ||
-      payload.incidents_today < 0 ||
+      (payload.incidents_today !== undefined && !hasIncidentCount) ||
       !payload.samples.every((sample) =>
         Number.isFinite(sample.sequence) &&
         Number.isFinite(sample.temperature) &&
@@ -222,7 +268,7 @@ async function pollLiveSample() {
     }
 
     connected = true;
-    updateLiveWindow(payload.samples, payload.total_samples, payload.incidents_today);
+    updateLiveWindow(payload.samples, payload.total_samples, hasIncidentCount ? payload.incidents_today : null);
   } catch (error) {
     console.error(error);
     connected = false;
@@ -267,6 +313,7 @@ async function loadData() {
       false
     ));
 
+    applyTheme(document.documentElement.dataset.theme);
     window.addEventListener('resize', () => {
       tempChart.resize();
       vibChart.resize();
@@ -274,8 +321,12 @@ async function loadData() {
     document.getElementById('acknowledgeAlert').addEventListener('click', () => {
       if (conditionActive) return;
       alertPending = false;
+      document.getElementById('sensorAlert').close();
       renderAlert();
       renderSystemStatus();
+    });
+    document.getElementById('sensorAlert').addEventListener('cancel', (event) => {
+      event.preventDefault();
     });
     pollLiveSample();
   } catch (error) {
@@ -286,4 +337,5 @@ async function loadData() {
 }
 
 setupNavigation();
+setupThemeToggle();
 loadData();

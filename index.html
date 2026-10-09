@@ -13,6 +13,16 @@
   <body>
     <div class="page-shell">
       <header class="topbar">
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Ativar tema claro" title="Ativar tema claro">
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>
+          </svg>
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.2 15.5A8.5 8.5 0 0 1 8.5 3.8 8.5 8.5 0 1 0 20.2 15.5Z"></path>
+            <path d="m16.5 3 .5 1.5 1.5.5-1.5.5-.5 1.5L16 5.5l-1.5-.5 1.5-.5.5-1.5Z"></path>
+          </svg>
+        </button>
         <div class="title-wrap">
           <h1>Monitoramento de vibração em máquinas Pick-and-Place</h1>
         </div>
@@ -77,16 +87,8 @@
                 <span class="kpi-trend incident-trend">Hoje</span>
               </div>
               <div class="kpi-value" id="incidentCountToday">0</div>
-              <div class="kpi-foot">Ocorrências registradas</div>
+              <div class="kpi-foot" id="incidentCountHelp">Ocorrências registradas</div>
             </article>
-          </section>
-
-          <section class="alert-banner" id="sensorAlert" role="alert" aria-live="assertive" hidden>
-            <div>
-              <strong id="alertTitle">Alerta dos sensores</strong>
-              <p id="alertMessage"></p>
-            </div>
-            <button id="acknowledgeAlert" type="button">Reconhecer alerta</button>
           </section>
 
           <section class="chart-grid">
@@ -191,6 +193,16 @@
         </section>
       </main>
     </div>
+
+    <dialog class="alert-modal" id="sensorAlert" aria-labelledby="alertTitle" aria-describedby="alertMessage">
+      <div class="alert-modal-card">
+        <div class="alert-modal-icon" aria-hidden="true">!</div>
+        <p class="alert-modal-eyebrow">ALERTA CRÍTICO · SENSORES</p>
+        <strong class="alert-modal-title" id="alertTitle">Temperatura e vibração elevadas</strong>
+        <p class="alert-modal-message" id="alertMessage"></p>
+        <button class="alert-modal-action" id="acknowledgeAlert" type="button">Reconhecer alerta</button>
+      </div>
+    </dialog>
 
     <script src="assets/js/app.js"></script>
   </body>

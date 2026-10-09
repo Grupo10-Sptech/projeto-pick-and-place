@@ -124,23 +124,6 @@ function updateSummary(sampleCount) {
   }
 }
 
-function setupNavigation() {
-  const navButtons = document.querySelectorAll('.nav-button');
-  const panels = document.querySelectorAll('.view-panel');
-
-  navButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const targetView = button.dataset.view;
-
-      navButtons.forEach((item) => item.classList.toggle('active', item === button));
-      panels.forEach((panel) => {
-        const isActive = panel.id === `${targetView}View`;
-        panel.classList.toggle('active', isActive);
-      });
-    });
-  });
-}
-
 let tempChart;
 let vibChart;
 let temperatureValues = [];
@@ -336,6 +319,5 @@ async function loadData() {
   }
 }
 
-setupNavigation();
 setupThemeToggle();
 loadData();

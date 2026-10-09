@@ -27,11 +27,6 @@
           <h1>Monitoramento de vibração em máquinas Pick-and-Place</h1>
         </div>
 
-        <nav class="main-nav" aria-label="Navegação do projeto">
-          <button class="nav-button active" type="button" data-view="overview">Visão geral</button>
-          <button class="nav-button" type="button" data-view="sensors">Infraestrutura</button>
-        </nav>
-
         <div class="status-group">
           <div class="status-badge" id="systemStatus">
             <span class="dot" id="statusDot"></span>
@@ -120,77 +115,6 @@
           </section>
         </section>
 
-        <section id="sensorsView" class="view-panel">
-          <section class="sensor-detail-grid">
-            <article class="sensor-card vibration-card">
-              <div class="sensor-card-header">
-                <span class="sensor-icon">M</span>
-                <div>
-                  <p>MPU6050</p>
-                  <h3>Sensor de vibração</h3>
-                </div>
-              </div>
-              <p class="sensor-description">Monitora aceleração, vibração mecânica e sinais de desgaste operacional.</p>
-            </article>
-
-            <article class="sensor-card temperature-card">
-              <div class="sensor-card-header">
-                <span class="sensor-icon">D</span>
-                <div>
-                  <p>DS18B20</p>
-                  <h3>Sensor de temperatura</h3>
-                </div>
-              </div>
-              <p class="sensor-description">Acompanha variação térmica do equipamento e possíveis pontos de aquecimento.</p>
-            </article>
-          </section>
-
-          <section class="panel infra-panel">
-            <div class="panel-header machine-header">
-              <div>
-                <p class="panel-label">Infraestrutura</p>
-                <h3>Local de instalação dos sensores na linha de produção</h3>
-              </div>
-              <span class="chip chip-blue">ESP32</span>
-            </div>
-
-            <div class="infra-layout">
-              <div class="machine-layout">
-                <div class="machine-visual">
-                  <div class="machine-frame">
-                    <div class="sensor sensor-vibration">
-                      <span>MPU6050</span>
-                      <small>Vibração</small>
-                    </div>
-                    <div class="sensor sensor-temperature">
-                      <span>DS18B20</span>
-                      <small>Temperatura</small>
-                    </div>
-                    <div class="machine-core">
-                      <span>Pick-and-Place</span>
-                    </div>
-                    <div class="esp32-box">ESP32</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="infra-specs">
-                <div class="metric-pill">
-                  <span>Sensores</span>
-                  <strong>2</strong>
-                </div>
-                <div class="metric-pill">
-                  <span>Coleta</span>
-                  <strong>1s</strong>
-                </div>
-                <div class="metric-pill">
-                  <span>Rede</span>
-                  <strong>Wi‑Fi</strong>
-                </div>
-              </div>
-            </div>
-          </section>
-        </section>
       </main>
     </div>
 

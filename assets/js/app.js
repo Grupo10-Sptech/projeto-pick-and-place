@@ -33,9 +33,9 @@ const buildChartConfig = (type, labels, values, label, color, fill = false) => (
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: '#1e2942',
-        titleColor: '#ffffff',
-        bodyColor: '#ffffff',
+        backgroundColor: '#111d2e',
+        titleColor: '#eaf4ff',
+        bodyColor: '#c4d6e9',
         callbacks: {
           label: (context) => `${context.dataset.label}: ${context.parsed.y.toFixed(2)}`,
         }
@@ -45,7 +45,7 @@ const buildChartConfig = (type, labels, values, label, color, fill = false) => (
       x: {
         ticks: {
           maxTicksLimit: 8,
-          color: '#5b6166',
+          color: '#9aafc8',
           autoSkip: true,
           maxRotation: 0,
           minRotation: 0,
@@ -53,8 +53,8 @@ const buildChartConfig = (type, labels, values, label, color, fill = false) => (
         grid: { display: false },
       },
       y: {
-        ticks: { color: '#5b6166' },
-        grid: { color: 'rgba(91, 97, 102, 0.12)' },
+        ticks: { color: '#9aafc8' },
+        grid: { color: 'rgba(142, 174, 208, 0.12)' },
       },
     },
   },
@@ -144,10 +144,10 @@ function renderAlert() {
   if (alertPending && latestAlert) {
     title.textContent = conditionActive ? 'Alerta: temperatura e vibração elevadas' : 'Alerta registrado';
     const time = new Date(latestAlert.timestamp).toLocaleTimeString('pt-BR');
-    const resolution = conditionActive ? '' : ' A condição voltou ao normal.';
+    const resolution = conditionActive ? '' : ' Condição normalizada.';
     message.textContent =
-      `Temperatura: ${formatNumber(latestAlert.temperature, 1)} °C (limite ${formatNumber(temperatureThreshold, 1)} °C); ` +
-      `vibração: ${formatNumber(latestAlert.vibration, 2)} g (limite ${formatNumber(vibrationThreshold, 2)} g), às ${time}.${resolution}`;
+      `Temp. ${formatNumber(latestAlert.temperature, 1)} °C (limite ${formatNumber(temperatureThreshold, 1)} °C); ` +
+      `vib. ${formatNumber(latestAlert.vibration, 2)} g (limite ${formatNumber(vibrationThreshold, 2)} g), ${time}.${resolution}`;
   }
 }
 
@@ -170,7 +170,7 @@ function updateAlert(sample) {
   renderSystemStatus();
 }
 
-function updateLiveWindow(samples, totalSamples) {
+function updateLiveWindow(samples, totalSamples, incidentsToday) {
   const recentSamples = samples.slice(-maxChartSamples);
   const labels = recentSamples.map((sample) => new Date(sample.timestamp).toLocaleTimeString('pt-BR'));
   temperatureValues = recentSamples.map((sample) => sample.temperature);
@@ -192,6 +192,7 @@ function updateLiveWindow(samples, totalSamples) {
   temperatureThreshold = latestSample.temperature_threshold;
   vibrationThreshold = latestSample.vibration_threshold;
   sampleCount = totalSamples;
+  document.getElementById('incidentCountToday').textContent = incidentsToday.toLocaleString('pt-BR');
   updateSummary(sampleCount);
   updateKpis(temperatureValues, vibrationValues);
   tempChart.update('none');
@@ -207,6 +208,8 @@ async function pollLiveSample() {
       !Array.isArray(payload.samples) ||
       payload.samples.length === 0 ||
       !Number.isFinite(payload.total_samples) ||
+      !Number.isInteger(payload.incidents_today) ||
+      payload.incidents_today < 0 ||
       !payload.samples.every((sample) =>
         Number.isFinite(sample.sequence) &&
         Number.isFinite(sample.temperature) &&
@@ -219,7 +222,7 @@ async function pollLiveSample() {
     }
 
     connected = true;
-    updateLiveWindow(payload.samples, payload.total_samples);
+    updateLiveWindow(payload.samples, payload.total_samples, payload.incidents_today);
   } catch (error) {
     console.error(error);
     connected = false;
@@ -251,7 +254,7 @@ async function loadData() {
       tempLabels,
       temperatureValues,
       'Temperatura',
-      '#5faab5',
+      '#42dfd0',
       true
     ));
 
@@ -260,7 +263,7 @@ async function loadData() {
       vibLabels,
       vibrationValues,
       'Vibração',
-      '#1e2942',
+      '#82aaff',
       false
     ));
 

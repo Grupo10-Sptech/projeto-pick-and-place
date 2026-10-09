@@ -1,0 +1,20 @@
+[
+  {
+    "date": "2026-10-09",
+    "timestamp": "2026-10-09T19:57:56.500777-03:00",
+    "temperature": 42,
+    "vibration": 1.5
+  },
+  {
+    "date": "2026-10-09",
+    "timestamp": "2026-10-09T19:57:56.500792-03:00",
+    "temperature": 42,
+    "vibration": 1.5
+  },
+  {
+    "date": "2026-10-09",
+    "timestamp": "2026-10-09T19:58:16-03:00",
+    "temperature": 42.49,
+    "vibration": 1.628
+  }
+]

@@ -16,5 +16,17 @@
     "timestamp": "2026-10-09T19:58:16-03:00",
     "temperature": 42.49,
     "vibration": 1.628
+  },
+  {
+    "date": "2026-10-09",
+    "timestamp": "2026-10-09T23:03:28-03:00",
+    "temperature": 42.49,
+    "vibration": 1.628
+  },
+  {
+    "date": "2026-10-09",
+    "timestamp": "2026-10-09T23:05:28-03:00",
+    "temperature": 43.47,
+    "vibration": 1.562
   }
 ]

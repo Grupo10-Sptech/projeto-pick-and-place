@@ -793,7 +793,8 @@ canvas {
   }
 
   .kpi-card {
-    padding: 6px 7px;
+    min-height: 104px;
+    padding: 12px 8px;
   }
 
   .kpi-label {
@@ -1070,7 +1071,8 @@ canvas {
   }
 
   .kpi-card {
-    padding: 5px 5px;
+    min-height: 80px;
+    padding: 8px 5px;
   }
 
   .kpi-label {

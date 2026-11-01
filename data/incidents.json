@@ -706,5 +706,65 @@
     "timestamp": "2026-11-01T02:03:46+00:00",
     "temperature": 27.4,
     "vibration": 1.268
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:04:39+00:00",
+    "temperature": 29.15,
+    "vibration": 1.231
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:04:56+00:00",
+    "temperature": 41.68,
+    "vibration": 1.552
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:06:56+00:00",
+    "temperature": 43.13,
+    "vibration": 1.721
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:07:18+00:00",
+    "temperature": 32.15,
+    "vibration": 1.345
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:08:11+00:00",
+    "temperature": 28.73,
+    "vibration": 1.394
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:08:56+00:00",
+    "temperature": 42.45,
+    "vibration": 1.518
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:10:56+00:00",
+    "temperature": 41.95,
+    "vibration": 1.526
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:11:43+00:00",
+    "temperature": 26.49,
+    "vibration": 1.337
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:12:36+00:00",
+    "temperature": 30.89,
+    "vibration": 1.255
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:12:56+00:00",
+    "temperature": 40.7,
+    "vibration": 1.605
   }
 ]

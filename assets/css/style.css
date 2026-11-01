@@ -798,17 +798,17 @@ canvas {
   }
 
   .kpi-label {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
   }
 
   .kpi-trend {
     padding: 3px 4px;
-    font-size: 0.5rem;
+    font-size: 0.56rem;
   }
 
   .kpi-value {
     margin-top: 2px;
-    font-size: 1.05rem;
+    font-size: 1.15rem;
   }
 
   .kpi-foot {
@@ -956,17 +956,17 @@ canvas {
   }
 
   .kpi-label {
-    font-size: 0.58rem;
+    font-size: 0.64rem;
   }
 
   .kpi-trend {
     padding: 3px 5px;
-    font-size: 0.52rem;
+    font-size: 0.56rem;
   }
 
   .kpi-value {
     margin-top: 4px;
-    font-size: 1rem;
+    font-size: 1.08rem;
   }
 
   .kpi-foot {
@@ -1076,17 +1076,17 @@ canvas {
   }
 
   .kpi-label {
-    font-size: 0.53rem;
+    font-size: 0.58rem;
   }
 
   .kpi-trend {
     padding: 2px 4px;
-    font-size: 0.48rem;
+    font-size: 0.52rem;
   }
 
   .kpi-value {
     margin-top: 2px;
-    font-size: 0.9rem;
+    font-size: 0.98rem;
   }
 
   .alert-banner {

@@ -105,11 +105,15 @@ function updateKpis(temperatureValues, vibrationValues) {
   if (!temperatureValues.length || !vibrationValues.length) return;
   const tempAverage = average(temperatureValues);
   const vibrationAverage = rms(vibrationValues);
-  const health = Math.max(0, Math.min(100, 100 - (vibrationAverage * 40) - (Math.max(0, tempAverage - 30) * 4)));
+  const latestTemperature = temperatureValues[temperatureValues.length - 1];
+  const latestVibration = vibrationValues[vibrationValues.length - 1];
+  const isAnomaly =
+    latestTemperature > temperatureThreshold ||
+    latestVibration > vibrationThreshold;
 
   document.getElementById('tempAvg').textContent = `${formatNumber(tempAverage, 1)} °C`;
   document.getElementById('vibrationRms').textContent = `${formatNumber(vibrationAverage, 2)} g`;
-  document.getElementById('healthIndex').textContent = `${formatNumber(health, 0)} / 100`;
+  document.getElementById('healthIndex').textContent = isAnomaly ? '1 — Anomalia' : '0 — Normal';
 }
 
 function updateSummary(sampleCount) {
@@ -164,9 +168,9 @@ function renderAlert() {
   if (!alert || !title || !message || !acknowledgeButton) return;
 
   if (alertPending && !alert.open) alert.showModal();
-  acknowledgeButton.disabled = conditionActive;
+  acknowledgeButton.disabled = false;
   if (alertPending && latestAlert) {
-    title.textContent = conditionActive ? 'Alerta: temperatura e vibração elevadas' : 'Alerta registrado';
+    title.textContent = conditionActive ? 'Alerta: limite de sensor ultrapassado' : 'Alerta registrado';
     const time = new Date(latestAlert.timestamp).toLocaleTimeString('pt-BR');
     const resolution = conditionActive ? '' : ' Condição normalizada.';
     message.textContent =
@@ -176,20 +180,21 @@ function renderAlert() {
 }
 
 function updateAlert(sample) {
-  const exceedsBothThresholds =
-    sample.temperature > temperatureThreshold && sample.vibration > vibrationThreshold;
+  const exceedsThreshold =
+    sample.temperature > temperatureThreshold ||
+    sample.vibration > vibrationThreshold;
 
-  if (exceedsBothThresholds) {
+  if (exceedsThreshold) {
     if (!conditionActive) {
       alertPending = true;
-      latestAlert = sample;
-    } else {
+      latestAlert = { ...sample };
+    } else if (latestAlert) {
       latestAlert.temperature = Math.max(latestAlert.temperature, sample.temperature);
       latestAlert.vibration = Math.max(latestAlert.vibration, sample.vibration);
       latestAlert.timestamp = sample.timestamp;
     }
   }
-  conditionActive = exceedsBothThresholds;
+  conditionActive = exceedsThreshold;
   renderAlert();
   renderSystemStatus();
 }
@@ -257,7 +262,7 @@ async function pollLiveSample() {
     connected = false;
     renderSystemStatus();
   } finally {
-    window.setTimeout(pollLiveSample, 1000);
+    window.setTimeout(pollLiveSample, 10000);
   }
 }
 
@@ -302,7 +307,6 @@ async function loadData() {
       vibChart.resize();
     });
     document.getElementById('acknowledgeAlert').addEventListener('click', () => {
-      if (conditionActive) return;
       alertPending = false;
       document.getElementById('sensorAlert').close();
       renderAlert();

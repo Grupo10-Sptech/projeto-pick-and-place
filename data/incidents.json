@@ -670,8 +670,6 @@
     "timestamp": "2026-11-01T01:57:35+00:00",
     "temperature": 32.11,
     "vibration": 1.281
-<<<<<<< Updated upstream
-=======
   },
   {
     "date": "2026-11-01",
@@ -696,6 +694,17 @@
     "timestamp": "2026-11-01T02:01:07+00:00",
     "temperature": 32.08,
     "vibration": 1.205
->>>>>>> Stashed changes
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:02:56+00:00",
+    "temperature": 39.81,
+    "vibration": 1.436
+  },
+  {
+    "date": "2026-11-01",
+    "timestamp": "2026-11-01T02:03:46+00:00",
+    "temperature": 27.4,
+    "vibration": 1.268
   }
 ]

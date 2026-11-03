@@ -2495,3 +2495,291 @@ body:has(.history-columns) .history-hero {
   transform: none;
   filter: brightness(1.08);
 }
+
+/* ===== Painel Gerencial ===== */
+
+body:has(.management-view) {
+  height: auto;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body:has(.management-view) .page-shell {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+.management-view {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.management-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.management-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 18px 20px;
+  margin-bottom: 4px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--navy), #2d3b5a);
+  color: var(--white);
+  box-shadow: 0 12px 30px var(--shadow);
+}
+
+.management-heading h2 {
+  margin: 0 0 8px;
+  color: var(--white);
+}
+
+.management-heading p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.management-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.management-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 125px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid rgba(95, 170, 181, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px var(--shadow);
+}
+
+.management-card strong {
+  color: var(--navy);
+  font-size: clamp(1.4rem, 2vw, 2rem);
+}
+
+.management-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.management-panel {
+  min-width: 0;
+  padding: 18px;
+  background: var(--white);
+  border-radius: 20px;
+  box-shadow: 0 12px 30px var(--shadow);
+}
+
+.management-panel h3 {
+  margin: 0 0 14px;
+  color: var(--navy);
+  font-size: 1.15rem;
+}
+
+.management-chart {
+  position: relative;
+  min-height: 175px;
+}
+
+#periodFilter {
+  padding: 10px 14px;
+  border: 1px solid rgba(95, 170, 181, 0.4);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--navy);
+  font: inherit;
+}
+
+#managementMessage {
+  color: var(--gray);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 760px) {
+  .management-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .management-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  body:has(.management-view) .page-shell {
+    padding: 12px;
+  }
+
+  .management-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .management-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Ajustes finais do painel gerencial */
+
+html:has(.management-view),
+body:has(.management-view) {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body:has(.management-view) .page-shell.management-view {
+  height: auto !important;
+  min-height: 100vh;
+  overflow: visible !important;
+}
+
+.management-content {
+  padding-bottom: 30px;
+}
+
+.management-heading {
+  background:
+    radial-gradient(ellipse at 84% 0%, rgba(57, 188, 202, 0.17), transparent 45%),
+    linear-gradient(112deg, #12243a 0%, #122d43 52%, #172746 100%) !important;
+  border: 1px solid rgba(116, 183, 215, 0.19) !important;
+  color: #eef8ff !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+.management-heading h2,
+.management-heading .eyebrow {
+  color: #eef8ff !important;
+}
+
+.management-heading p {
+  color: #a9c0d6 !important;
+}
+
+html[data-theme="light"] .management-heading {
+  background: linear-gradient(135deg, #ffffff, #edf7fa) !important;
+  border-color: rgba(33, 157, 169, 0.24) !important;
+  box-shadow: 0 8px 22px rgba(31, 59, 84, 0.07) !important;
+}
+
+html[data-theme="light"] .management-heading h2,
+html[data-theme="light"] .management-heading .eyebrow {
+  color: #173c56 !important;
+}
+
+html[data-theme="light"] .management-heading p {
+  color: #5b7185 !important;
+}
+/* PAINEL GERENCIAL - LAYOUT COMPACTO */
+@media (min-width: 761px) {
+  html:has(.management-view),
+  body:has(.management-view) {
+    height: 100vh !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.management-view) .page-shell.management-view {
+    height: 100vh !important;
+    min-height: 0 !important;
+    padding: 10px 20px !important;
+    overflow: hidden !important;
+  }
+
+  .management-content {
+    gap: 7px !important;
+    padding-bottom: 0 !important;
+  }
+
+  .management-heading {
+    padding: 8px 14px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  .management-heading h2 {
+    font-size: 1.15rem !important;
+    margin-bottom: 2px !important;
+  }
+
+  .management-heading p {
+    font-size: 0.75rem !important;
+  }
+
+  #periodFilter {
+    padding: 6px 9px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .management-cards,
+  .management-panels {
+    gap: 7px !important;
+  }
+
+  .management-card {
+    min-height: 75px !important;
+    padding: 8px 11px !important;
+    gap: 3px !important;
+    border-radius: 11px !important;
+  }
+
+  .management-card span {
+    font-size: 0.75rem !important;
+  }
+
+  .management-card strong {
+    font-size: 1.25rem !important;
+  }
+
+  .management-card small {
+    font-size: 0.68rem !important;
+  }
+
+  .management-panel {
+    padding: 9px 11px !important;
+    border-radius: 11px !important;
+  }
+
+  .management-panel h3 {
+    font-size: 0.9rem !important;
+    margin-bottom: 4px !important;
+  }
+
+  .management-chart {
+    min-height: 0 !important;
+  }
+}
+
+
+/* Destaque visual para incidentes */
+.alert-incident {
+    background: rgba(220, 53, 69, 0.10);
+    border: 1px solid rgba(220, 53, 69, 0.55);
+    border-left: 4px solid #dc3545;
+    box-shadow: 0 4px 14px rgba(220, 53, 69, 0.10);
+}
+
+.alert-incident .incident-value {
+    color: #e05260;
+}

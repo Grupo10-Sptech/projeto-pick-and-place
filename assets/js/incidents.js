@@ -30,7 +30,14 @@ function formatDate(timestamp) {
   const date = new Date(timestamp);
   return Number.isNaN(date.getTime())
     ? "Data indisponível"
-    : date.toLocaleString("pt-BR");
+    : date.toLocaleString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
 }
 
 function formatValue(value, decimals) {
@@ -44,9 +51,13 @@ function formatValue(value, decimals) {
   });
 }
 
-function createIncidentCard(incident, type) {
+function createIncidentCard(incident, type, highlight = false) {
   const card = document.createElement("article");
   card.className = `incident-card ${type}-incident`;
+
+  if (highlight) {
+    card.classList.add("alert-incident");
+  }
 
   const details = document.createElement("div");
   details.className = "incident-card-details";
@@ -79,7 +90,7 @@ function isTemperatureIncident(reason) {
          reason === "temperatura_e_vibracao";
 }
 
-function renderIncidentList(containerId, countId, incidents, type) {
+function renderIncidentList(containerId, countId, incidents, type, highlightedIncidents) {
   const container = document.getElementById(containerId);
   const count = document.getElementById(countId);
 
@@ -95,12 +106,19 @@ function renderIncidentList(containerId, countId, incidents, type) {
   }
 
   incidents.forEach((incident) => {
-    container.appendChild(createIncidentCard(incident, type));
+    const highlight = highlightedIncidents.has(incident);
+    container.appendChild(createIncidentCard(incident, type, highlight));
   });
 }
 
 function renderIncidents(incidents) {
   const total = document.getElementById("incidentTotal");
+
+  const highlightedIncidents = new Set(
+    [...incidents]
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+      .slice(0, 2)
+  );
 
   const vibrationIncidents = incidents.filter((incident) =>
     isVibrationIncident(incident.reason)
@@ -116,14 +134,16 @@ function renderIncidents(incidents) {
     "vibrationList",
     "vibrationTotal",
     vibrationIncidents,
-    "vibration"
+    "vibration",
+    highlightedIncidents
   );
 
   renderIncidentList(
     "temperatureList",
     "temperatureTotal",
     temperatureIncidents,
-    "temperature"
+    "temperature",
+    highlightedIncidents
   );
 }
 

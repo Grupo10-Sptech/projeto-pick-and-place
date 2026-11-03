@@ -1,3 +1,4 @@
+from management_api import get_management_data
 
 import json
 import os
@@ -8,6 +9,7 @@ from collections import deque
 from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs
 
 import paho.mqtt.client as mqtt
 from influxdb_client import InfluxDBClient
@@ -58,6 +60,25 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         route = self.path.split("?", 1)[0]
+
+        if route == "/api/management":
+            params = parse_qs(self.path.split("?", 1)[1] if "?" in self.path else "")
+            period = params.get("period", ["7d"])[0]
+
+            if period not in ("24h", "7d", "30d", "90d"):
+                self.send_json({"error": "Período inválido."}, 400)
+                return
+
+            try:
+                data = get_management_data(period)
+                self.send_json({"period": period, **data})
+            except Exception as error:
+                import traceback
+                traceback.print_exc()
+                self.send_json({"error": str(error)}, 500)
+
+            return
+
 
         if route == "/api/incidents":
             token = os.environ.get("INFLUX_TOKEN")
@@ -228,11 +249,22 @@ def generate_samples(stop_event, mqtt_client):
 
         with sample_lock:
             if incident_active and not incident_condition_active:
+                temperature_alert = temperature > TEMPERATURE_THRESHOLD_C
+                vibration_alert = vibration > VIBRATION_THRESHOLD_G
+
+                if temperature_alert and vibration_alert:
+                    reason = "temperatura_e_vibracao"
+                elif temperature_alert:
+                    reason = "temperatura"
+                else:
+                    reason = "vibracao"
+
                 incidents.append({
                     "date": recorded_at.date().isoformat(),
                     "timestamp": timestamp,
                     "temperature": temperature,
                     "vibration": vibration,
+                    "reason": reason,
                 })
                 save_incidents()
 

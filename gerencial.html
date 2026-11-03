@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Gerencial — Pick-and-Place</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+<div class="page-shell management-view">
+
+  <header class="topbar">
+    <button class="theme-toggle" id="themeToggle" type="button"
+      aria-label="Ativar tema claro" title="Ativar tema claro">
+      <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>
+      </svg>
+      <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M20.2 15.5A8.5 8.5 0 0 1 8.5 3.8 8.5 8.5 0 1 0 20.2 15.5Z"></path>
+        <path d="m16.5 3 .5 1.5 1.5.5-1.5.5-.5 1.5L16 5.5l-1.5-.5 1.5-.5.5-1.5Z"></path>
+      </svg>
+    </button>
+
+    <div class="title-wrap">
+      <img class="brand-logo brand-logo-light" src="images/vibra-data-logo-light.png" alt="Vibra Data">
+      <img class="brand-logo brand-logo-dark" src="images/vibra-data-logo-dark.png" alt="Vibra Data">
+      <h1>Painel Gerencial</h1>
+    </div>
+  </header>
+
+  <nav class="page-nav" aria-label="Navegação principal">
+    <a class="page-nav-link" href="index.html">Dashboard</a>
+    <a class="page-nav-link" href="historico.html">Histórico de Incidentes</a>
+    <a class="page-nav-link active" href="gerencial.html" aria-current="page">Painel Gerencial</a>
+  </nav>
+
+  <main class="views">
+    <section class="management-content">
+
+      <div class="management-heading">
+        <div>
+          <p class="panel-label">GESTÃO · INDICADORES</p>
+          <h2>Visão executiva</h2>
+          <p>Indicadores para acompanhamento e tomada de decisão.</p>
+        </div>
+
+        <select id="periodFilter" aria-label="Período de análise">
+          <option value="24h">Últimas 24 horas</option>
+          <option value="7d" selected>Últimos 7 dias</option>
+          <option value="30d">Últimos 30 dias</option>
+          <option value="90d">Últimos 90 dias</option>
+        </select>
+      </div>
+
+      <div class="management-cards">
+
+        <article class="management-card">
+          <span>Total de incidentes</span>
+          <strong id="totalIncidents">--</strong>
+          <small>Ocorrências no período</small>
+        </article>
+
+        <article class="management-card">
+          <span>Principal causa</span>
+          <strong id="primaryCause">--</strong>
+          <small id="primaryCauseCount">-- ocorrências</small>
+        </article>
+
+        <article class="management-card">
+          <span>Incidentes combinados</span>
+          <strong id="combinedIncidents">--</strong>
+          <small>Temperatura + vibração</small>
+        </article>
+
+        <article class="management-card">
+          <span>Dia com mais incidentes</span>
+          <strong id="busiestDay">--</strong>
+          <small id="busiestDayCount">-- ocorrências</small>
+        </article>
+
+        <article class="management-card">
+          <span>Maior pico de temperatura</span>
+          <strong id="temperaturePeak">--</strong>
+          <small id="temperaturePeakTime">Data e horário: --</small>
+        </article>
+
+        <article class="management-card">
+          <span>Maior pico de vibração</span>
+          <strong id="vibrationPeak">--</strong>
+          <small id="vibrationPeakTime">Data e horário: --</small>
+        </article>
+
+      </div>
+
+      <div class="management-panels">
+
+        <section class="management-panel">
+          <h3>Incidentes por dia</h3>
+          <div id="dailyIncidents" class="management-chart">
+            Carregando dados...
+          </div>
+        </section>
+
+        <section class="management-panel">
+          <h3>Incidentes por tipo</h3>
+          <div id="incidentReasons" class="management-chart">
+            Carregando dados...
+          </div>
+        </section>
+
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<script src="assets/js/gerencial.js"></script>
+</body>
+</html>

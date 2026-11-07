@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acessar — Pick-and-Place</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css" />
+    <link rel="stylesheet" href="./assets/css/auth.css" />
+  </head>
+  <body>
+    <main class="auth-shell">
+      <section class="auth-card">
+        <img class="auth-logo brand-logo-dark" src="images/vibra-data-logo-dark.png" alt="Vibra Data" />
+        <img class="auth-logo brand-logo-light" src="images/vibra-data-logo-light.png" alt="" aria-hidden="true" />
+        <p class="panel-label">PICK-AND-PLACE</p>
+        <h1>Acesse sua conta</h1>
+        <p class="auth-description">Entre para acompanhar os indicadores da máquina.</p>
+
+        <form id="loginForm" class="auth-form">
+          <label>
+            E-mail
+            <input name="email" type="email" autocomplete="email" required maxlength="254" />
+          </label>
+          <label>
+            Senha
+            <input name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+          <button class="auth-submit" type="submit">Acessar</button>
+        </form>
+
+        <p class="auth-switch">Ainda não tem uma conta? <a href="./cadastro.html">Cadastre-se</a></p>
+      </section>
+    </main>
+    <script type="module" src="./assets/js/login.js"></script>
+  </body>
+</html>

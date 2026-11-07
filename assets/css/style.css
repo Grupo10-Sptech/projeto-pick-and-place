@@ -372,10 +372,24 @@ button {
 
 .incident-kpi .kpi-header {
   justify-content: center;
+  margin-bottom: 20px;
 }
 
 .incident-kpi .kpi-foot {
+  margin-top: 20px;
   text-align: center;
+}
+
+.incident-kpi .kpi-label {
+  font-size: 1.28rem;
+}
+
+.incident-kpi .kpi-value {
+  font-size: clamp(2.15rem, 2.8vw, 2.75rem);
+}
+
+.incident-kpi .kpi-foot {
+  font-size: 1.15rem;
 }
 
 .kpi-card.accent {
@@ -432,10 +446,10 @@ button {
 .kpi-range {
   display: flex;
   width: 100%;
-  max-width: 320px;
-  justify-content: space-around;
-  gap: 12px;
-  padding: 0 8px;
+  max-width: 460px;
+  justify-content: space-between;
+  gap: 56px;
+  padding: 0 30px;
   box-sizing: border-box;
   margin: 10px auto 0;
 }
@@ -451,15 +465,28 @@ button {
 
 .kpi-range-label {
   color: var(--gray);
-  font-size: 0.78rem;
+  font-size: 1.28rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
 .kpi-range-value {
   color: var(--navy);
-  font-size: clamp(1.2rem, 1.8vw, 1.65rem);
+  font-size: clamp(2.15rem, 2.8vw, 2.75rem);
   font-weight: 800;
+  white-space: nowrap;
+}
+
+.kpi-range-unit {
+  margin-left: 3px;
+  font-size: 0.48em;
+  font-weight: 700;
+}
+
+.kpi-range-time {
+  color: var(--gray);
+  font-size: 1.15rem;
+  line-height: 1.3;
   white-space: nowrap;
 }
 
@@ -809,11 +836,31 @@ canvas {
   }
 
   .kpi-range-value {
-    font-size: clamp(1rem, 1.7vw, 1.35rem);
+    font-size: clamp(1.8rem, 2.6vw, 2.25rem);
+  }
+
+  .kpi-range-label {
+    font-size: 1.18rem;
+  }
+
+  .kpi-range-time {
+    font-size: 1.04rem;
   }
 
   .kpi-foot {
     margin-top: 5px;
+  }
+
+  .incident-kpi .kpi-label {
+    font-size: 1.18rem;
+  }
+
+  .incident-kpi .kpi-value {
+    font-size: clamp(1.8rem, 2.6vw, 2.25rem);
+  }
+
+  .incident-kpi .kpi-foot {
+    font-size: 1.04rem;
   }
 
   .alert-banner {
@@ -1075,20 +1122,40 @@ canvas {
   }
 
   .kpi-range {
-    gap: 6px;
+    gap: 18px;
+    padding: 0 8px;
     margin-top: 4px;
   }
 
   .kpi-range-label {
-    font-size: 0.62rem;
+    font-size: 0.98rem;
   }
 
   .kpi-range-value {
-    font-size: clamp(0.72rem, 3.8vw, 1rem);
+    font-size: clamp(1.15rem, 5.5vw, 1.55rem);
+  }
+
+  .kpi-range-time {
+    font-size: clamp(0.84rem, 3.4vw, 0.96rem);
+    white-space: normal;
   }
 
   .kpi-foot {
     display: none;
+  }
+
+  .incident-kpi .kpi-label {
+    font-size: 0.98rem;
+  }
+
+  .incident-kpi .kpi-value {
+    font-size: clamp(1.15rem, 5.5vw, 1.55rem);
+  }
+
+  .incident-kpi .kpi-foot {
+    display: block;
+    margin-top: 4px;
+    font-size: clamp(0.84rem, 3.4vw, 0.96rem);
   }
 
   .incident-trend {
@@ -1205,6 +1272,19 @@ canvas {
   .kpi-value {
     margin-top: 2px;
     font-size: 0.98rem;
+  }
+
+  .incident-kpi .kpi-label {
+    font-size: 0.86rem;
+  }
+
+  .incident-kpi .kpi-value {
+    font-size: 1.15rem;
+  }
+
+  .incident-kpi .kpi-foot {
+    margin-top: 2px;
+    font-size: 0.64rem;
   }
 
   .alert-banner {
@@ -1812,9 +1892,51 @@ html[data-theme="light"] .panel:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
 }
 
+.page-nav-link[hidden] {
+  display: none;
+}
+
 /* ===== Página de histórico ===== */
 .history-view {
   gap: 14px;
+}
+
+.sensor-replacement-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.sensor-replacement-card {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 16px;
+  text-align: center;
+  border: 1px solid var(--outline);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.sensor-replacement-card span,
+.sensor-replacement-card small {
+  color: var(--gray);
+}
+
+.sensor-replacement-card strong {
+  color: var(--navy);
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.sensor-replacement-card.temperature-panel {
+  border-left: 4px solid #f97316;
+}
+
+.sensor-replacement-card.vibration-panel {
+  border-left: 4px solid #3b82f6;
 }
 
 .history-panel {
@@ -2285,6 +2407,10 @@ body:has(.history-columns) .history-view {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(2, minmax(250px, 1fr));
     overflow-y: auto;
+  }
+
+  .sensor-replacement-cards {
+    grid-template-columns: 1fr;
   }
 
   .history-columns .history-panel {

@@ -1,7 +1,10 @@
+import { requireDashboardRole } from "./auth.js";
 import {
   startSystemStatusPolling,
   updateAlertCount
 } from "./header-indicators.js";
+
+await requireDashboardRole("analyst");
 
 const incidentsUrl = "./api/incidents";
 
@@ -131,6 +134,8 @@ function renderIncidents(incidents) {
     isTemperatureIncident(incident.reason)
   );
 
+  updateSensorReplacement("temperature", temperatureIncidents.length);
+  updateSensorReplacement("vibration", vibrationIncidents.length);
   updateAlertCount(incidents.length);
 
   renderIncidentList(
@@ -150,9 +155,24 @@ function renderIncidents(incidents) {
   );
 }
 
+function updateSensorReplacement(sensor, incidentCount) {
+  const replacements = Math.floor(incidentCount / 40);
+  const incidentsTowardNextReplacement = incidentCount % 40;
+
+  document.getElementById(`${sensor}SensorReplacements`).textContent =
+    replacements.toLocaleString("pt-BR");
+  document.getElementById(`${sensor}SensorReplacementProgress`).textContent =
+    `${incidentCount.toLocaleString("pt-BR")} incidentes · ` +
+    `${incidentsTowardNextReplacement}/40 para próxima troca`;
+}
+
 async function loadIncidents() {
   try {
     const response = await fetch(incidentsUrl, { cache: "no-store" });
+    if (response.status === 401) {
+      window.location.replace("/login.html");
+      return;
+    }
 
     if (!response.ok) {
       throw new Error(`Erro ao consultar histórico: ${response.status}`);

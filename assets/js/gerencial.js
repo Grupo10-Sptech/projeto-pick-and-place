@@ -1,4 +1,9 @@
 
+import {
+    startAlertCountPolling,
+    startSystemStatusPolling
+} from "./header-indicators.js";
+
 const periodFilter = document.getElementById("periodFilter");
 const message = document.getElementById("managementMessage");
 
@@ -206,6 +211,8 @@ function setupManagementTheme() {
 }
 
 setupManagementTheme();
+startAlertCountPolling();
+startSystemStatusPolling();
 
 periodFilter.addEventListener("change", loadManagementData);
 

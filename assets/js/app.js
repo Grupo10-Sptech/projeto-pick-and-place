@@ -1,13 +1,14 @@
+import {
+  startAlertCountPolling,
+  updateSystemStatus
+} from './header-indicators.js';
+
 const dataUrl = './data/sensor_data.json';
 const liveSampleUrl = './api/sensors/sample';
 const maxChartSamples = 60;
 
 const formatNumber = (value, decimals = 2) =>
   new Intl.NumberFormat('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(value);
-
-const average = (values) => values.reduce((sum, value) => sum + value, 0) / values.length;
-
-const rms = (values) => Math.sqrt(values.reduce((sum, value) => sum + value * value, 0) / values.length);
 
 function applyTheme(theme) {
   const isLight = theme === 'light';
@@ -103,17 +104,16 @@ const buildChartConfig = (type, labels, values, label, color, fill = false) => (
 
 function updateKpis(temperatureValues, vibrationValues) {
   if (!temperatureValues.length || !vibrationValues.length) return;
-  const tempAverage = average(temperatureValues);
-  const vibrationAverage = rms(vibrationValues);
-  const latestTemperature = temperatureValues[temperatureValues.length - 1];
-  const latestVibration = vibrationValues[vibrationValues.length - 1];
-  const isAnomaly =
-    latestTemperature > temperatureThreshold ||
-    latestVibration > vibrationThreshold;
 
-  document.getElementById('tempAvg').textContent = `${formatNumber(tempAverage, 1)} °C`;
-  document.getElementById('vibrationRms').textContent = `${formatNumber(vibrationAverage, 2)} g`;
-  document.getElementById('healthIndex').textContent = isAnomaly ? '1 — Anomalia' : '0 — Normal';
+  const temperatureMin = Math.min(...temperatureValues);
+  const temperatureMax = Math.max(...temperatureValues);
+  const vibrationMin = Math.min(...vibrationValues);
+  const vibrationMax = Math.max(...vibrationValues);
+
+  document.getElementById('temperatureMin').textContent = `${formatNumber(temperatureMin, 1)} °C`;
+  document.getElementById('temperatureMax').textContent = `${formatNumber(temperatureMax, 1)} °C`;
+  document.getElementById('vibrationMin').textContent = `${formatNumber(vibrationMin, 2)} g`;
+  document.getElementById('vibrationMax').textContent = `${formatNumber(vibrationMax, 2)} g`;
 }
 
 function updateSummary(sampleCount) {
@@ -133,39 +133,8 @@ let vibChart;
 let temperatureValues = [];
 let vibrationValues = [];
 let sampleCount = 0;
-let temperatureThreshold = 38;
-let vibrationThreshold = 1.2;
-let connected = true;
-let lastProcessedSequence = -1;
-let conditionActive = false;
 
-function renderSystemStatus() {
-  const status = document.getElementById('systemStatus');
-  const statusText = document.getElementById('statusText');
-  if (!status || !statusText) return;
-
-  status.classList.toggle('offline', !connected);
-  status.classList.toggle('alert', connected && conditionActive);
-
-  if (!connected) {
-    statusText.textContent = 'Sem conexão com os sensores';
-  } else if (conditionActive) {
-    statusText.textContent = 'Alerta detectado';
-  } else {
-    statusText.textContent = 'Sistema ativo';
-  }
-}
-
-function updateAlert(sample) {
-  const exceedsThreshold =
-    sample.temperature > temperatureThreshold ||
-    sample.vibration > vibrationThreshold;
-
-  conditionActive = exceedsThreshold;
-  renderSystemStatus();
-}
-
-function updateLiveWindow(samples, totalSamples, incidentsToday) {
+function updateLiveWindow(samples, totalSamples, machineStopsToday) {
   const recentSamples = samples.slice(-maxChartSamples);
   const labels = recentSamples.map((sample) => new Date(sample.timestamp).toLocaleTimeString('pt-BR'));
   temperatureValues = recentSamples.map((sample) => sample.temperature);
@@ -176,22 +145,12 @@ function updateLiveWindow(samples, totalSamples, incidentsToday) {
   vibChart.data.labels = labels;
   vibChart.data.datasets[0].data = vibrationValues;
 
-  for (const sample of samples) {
-    if (sample.sequence > lastProcessedSequence) {
-      updateAlert(sample);
-      lastProcessedSequence = sample.sequence;
-    }
-  }
-
-  const latestSample = recentSamples[recentSamples.length - 1];
-  temperatureThreshold = latestSample.temperature_threshold;
-  vibrationThreshold = latestSample.vibration_threshold;
   sampleCount = totalSamples;
-  document.getElementById('incidentCountToday').textContent = Number.isInteger(incidentsToday)
-    ? incidentsToday.toLocaleString('pt-BR')
+  document.getElementById('machineStopsToday').textContent = Number.isInteger(machineStopsToday)
+    ? machineStopsToday.toLocaleString('pt-BR')
     : '--';
-  document.getElementById('incidentCountHelp').textContent = Number.isInteger(incidentsToday)
-    ? 'Ocorrências registradas'
+  document.getElementById('machineStopsHelp').textContent = Number.isInteger(machineStopsToday)
+    ? 'Ocorrências combinadas: temperatura + vibração'
     : 'Reinicie o servidor para ativar';
   updateSummary(sampleCount);
   updateKpis(temperatureValues, vibrationValues);
@@ -204,12 +163,12 @@ async function pollLiveSample() {
     const response = await fetch(liveSampleUrl, { cache: 'no-store' });
     if (!response.ok) throw new Error(`Erro ao coletar leitura: ${response.status}`);
     const payload = await response.json();
-    const hasIncidentCount = Number.isInteger(payload.incidents_today) && payload.incidents_today >= 0;
+    const hasMachineStopsCount = Number.isInteger(payload.machine_stops_today) && payload.machine_stops_today >= 0;
     if (
       !Array.isArray(payload.samples) ||
       payload.samples.length === 0 ||
       !Number.isFinite(payload.total_samples) ||
-      (payload.incidents_today !== undefined && !hasIncidentCount) ||
+      (payload.machine_stops_today !== undefined && !hasMachineStopsCount) ||
       !payload.samples.every((sample) =>
         Number.isFinite(sample.sequence) &&
         Number.isFinite(sample.temperature) &&
@@ -221,12 +180,11 @@ async function pollLiveSample() {
       throw new Error('Resposta inválida recebida dos sensores.');
     }
 
-    connected = true;
-    updateLiveWindow(payload.samples, payload.total_samples, hasIncidentCount ? payload.incidents_today : null);
+    updateSystemStatus(true);
+    updateLiveWindow(payload.samples, payload.total_samples, hasMachineStopsCount ? payload.machine_stops_today : null);
   } catch (error) {
     console.error(error);
-    connected = false;
-    renderSystemStatus();
+    updateSystemStatus(false);
   } finally {
     window.setTimeout(pollLiveSample, 10000);
   }
@@ -243,9 +201,6 @@ async function loadData() {
     const vibLabels = payload.vibration.timestamps.slice(-maxChartSamples);
     vibrationValues = payload.vibration.values.slice(-maxChartSamples);
     sampleCount = Math.max(payload.temperature.values.length, payload.vibration.values.length);
-    temperatureThreshold = payload.temperature.threshold;
-    vibrationThreshold = payload.vibration.threshold;
-
     updateSummary(sampleCount);
     updateKpis(temperatureValues, vibrationValues);
 
@@ -275,10 +230,10 @@ async function loadData() {
     pollLiveSample();
   } catch (error) {
     console.error(error);
-    document.getElementById('systemStatus').classList.add('offline');
-    document.getElementById('statusText').textContent = 'Erro ao carregar dados';
+    updateSystemStatus(false);
   }
 }
 
 setupThemeToggle();
+startAlertCountPolling();
 loadData();

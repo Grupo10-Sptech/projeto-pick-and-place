@@ -151,7 +151,7 @@ async function shutdown(exitCode) {
     }
   }
 
-  process.exitCode = exitCode;
+  process.exit(exitCode);
 }
 
 process.once("SIGINT", () => void shutdown(0));

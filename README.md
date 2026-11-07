@@ -35,6 +35,8 @@ O ambiente de desenvolvimento usa um token e uma senha locais definidos para a c
 
 Os dados do InfluxDB ficam em volumes Docker e são preservados ao encerrar `npm run dev`. Para reiniciar os serviços sem apagar esses dados, execute novamente `npm run dev`.
 
+Incidentes novos são gravados diretamente no InfluxDB pelo consumidor MQTT. Histórico, contadores e indicadores também são consultados no banco; o simulador não cria nem atualiza `data/incidents.json`. Se esse arquivo existir de uma execução anterior, ele permanece como arquivo legado e não é mais utilizado.
+
 ## Gerar os arquivos de produção
 
 ```powershell

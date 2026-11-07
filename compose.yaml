@@ -1,0 +1,49 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "127.0.0.1:1884:1883"
+    volumes:
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mosquitto_sub -h 127.0.0.1 -t '$$SYS/broker/version' -C 1 -W 15
+      interval: 15s
+      timeout: 16s
+      retries: 5
+      start_period: 5s
+
+  influxdb:
+    image: influxdb:2.7
+    ports:
+      - "127.0.0.1:8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: pick-and-place
+      DOCKER_INFLUXDB_INIT_PASSWORD: local-dev-password
+      DOCKER_INFLUXDB_INIT_ORG: projeto-iot
+      DOCKER_INFLUXDB_INIT_BUCKET: sensores
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN:?npm run dev must set INFLUX_TOKEN}
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    healthcheck:
+      test:
+        - CMD
+        - influx
+        - ping
+        - --host
+        - http://localhost:8086
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  influxdb-data:
+  influxdb-config:
+  mosquitto-data:
+  mosquitto-log:

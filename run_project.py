@@ -25,7 +25,7 @@ DATA_DIR = ROOT / "data"
 INCIDENT_FILE = DATA_DIR / "incidents.json"
 
 MQTT_HOST = "127.0.0.1"
-MQTT_PORT = 1883
+MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
 MQTT_TOPIC = "projeto-iot/sensores/pick-and-place-01"
 
 INFLUX_URL = "http://127.0.0.1:8086"
@@ -317,7 +317,8 @@ def main():
     load_historical_samples()
 
     mqtt_client = mqtt.Client(
-        client_id="pick-and-place-simulator"
+        callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+        client_id="pick-and-place-simulator",
     )
 
     print(f"Conectando ao MQTT em {MQTT_HOST}:{MQTT_PORT}...")
@@ -342,9 +343,9 @@ def main():
     print(f"Dashboard: http://localhost:{HTTP_PORT}/")
     print("Pressione Ctrl+C para encerrar.")
 
-    # Abre automaticamente apenas se houver ambiente gráfico.
     try:
-        webbrowser.open(f"http://localhost:{HTTP_PORT}/")
+        if not os.environ.get("PICK_AND_PLACE_NO_BROWSER"):
+            webbrowser.open(f"http://localhost:{HTTP_PORT}/")
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nEncerrando o projeto...")

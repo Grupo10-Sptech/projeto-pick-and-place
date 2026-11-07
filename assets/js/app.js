@@ -138,8 +138,6 @@ let vibrationThreshold = 1.2;
 let connected = true;
 let lastProcessedSequence = -1;
 let conditionActive = false;
-let alertPending = false;
-let latestAlert;
 
 function renderSystemStatus() {
   const status = document.getElementById('systemStatus');
@@ -147,35 +145,14 @@ function renderSystemStatus() {
   if (!status || !statusText) return;
 
   status.classList.toggle('offline', !connected);
-  status.classList.toggle('alert', connected && (conditionActive || alertPending));
+  status.classList.toggle('alert', connected && conditionActive);
 
   if (!connected) {
     statusText.textContent = 'Sem conexão com os sensores';
   } else if (conditionActive) {
     statusText.textContent = 'Alerta detectado';
-  } else if (alertPending) {
-    statusText.textContent = 'Alerta aguardando reconhecimento';
   } else {
     statusText.textContent = 'Sistema ativo';
-  }
-}
-
-function renderAlert() {
-  const alert = document.getElementById('sensorAlert');
-  const title = document.getElementById('alertTitle');
-  const message = document.getElementById('alertMessage');
-  const acknowledgeButton = document.getElementById('acknowledgeAlert');
-  if (!alert || !title || !message || !acknowledgeButton) return;
-
-  if (alertPending && !alert.open) alert.showModal();
-  acknowledgeButton.disabled = false;
-  if (alertPending && latestAlert) {
-    title.textContent = conditionActive ? 'Alerta: limite de sensor ultrapassado' : 'Alerta registrado';
-    const time = new Date(latestAlert.timestamp).toLocaleTimeString('pt-BR');
-    const resolution = conditionActive ? '' : ' Condição normalizada.';
-    message.textContent =
-      `Temp. ${formatNumber(latestAlert.temperature, 1)} °C (limite ${formatNumber(temperatureThreshold, 1)} °C); ` +
-      `vib. ${formatNumber(latestAlert.vibration, 2)} g (limite ${formatNumber(vibrationThreshold, 2)} g), ${time}.${resolution}`;
   }
 }
 
@@ -184,18 +161,7 @@ function updateAlert(sample) {
     sample.temperature > temperatureThreshold ||
     sample.vibration > vibrationThreshold;
 
-  if (exceedsThreshold) {
-    if (!conditionActive) {
-      alertPending = true;
-      latestAlert = { ...sample };
-    } else if (latestAlert) {
-      latestAlert.temperature = Math.max(latestAlert.temperature, sample.temperature);
-      latestAlert.vibration = Math.max(latestAlert.vibration, sample.vibration);
-      latestAlert.timestamp = sample.timestamp;
-    }
-  }
   conditionActive = exceedsThreshold;
-  renderAlert();
   renderSystemStatus();
 }
 
@@ -305,15 +271,6 @@ async function loadData() {
     window.addEventListener('resize', () => {
       tempChart.resize();
       vibChart.resize();
-    });
-    document.getElementById('acknowledgeAlert').addEventListener('click', () => {
-      alertPending = false;
-      document.getElementById('sensorAlert').close();
-      renderAlert();
-      renderSystemStatus();
-    });
-    document.getElementById('sensorAlert').addEventListener('cancel', (event) => {
-      event.preventDefault();
     });
     pollLiveSample();
   } catch (error) {

@@ -18,7 +18,9 @@ export default defineConfig({
       input: {
         dashboard: resolve(rootDirectory, "index.html"),
         incidents: resolve(rootDirectory, "historico.html"),
-        management: resolve(rootDirectory, "gerencial.html")
+        management: resolve(rootDirectory, "gerencial.html"),
+        login: resolve(rootDirectory, "login.html"),
+        register: resolve(rootDirectory, "cadastro.html")
       }
     }
   }

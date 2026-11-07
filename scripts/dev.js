@@ -8,7 +8,8 @@ const localInfluxToken = "pick-and-place-local-dev-token";
 const env = {
   ...process.env,
   INFLUX_TOKEN: localInfluxToken,
-  MQTT_PORT: "1884"
+  MQTT_PORT: "1884",
+  PICK_AND_PLACE_NO_BROWSER: "1"
 };
 const isWindows = process.platform === "win32";
 const pythonRelativePath = isWindows
@@ -26,6 +27,23 @@ let composeStarted = false;
 
 function sleep(milliseconds) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function waitForBackend() {
+  for (let attempt = 0; attempt < 120 && !stopping; attempt += 1) {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/api/auth/me");
+      if (response.status === 401 || response.ok) return;
+    } catch {
+      // The Python server may still be starting.
+    }
+
+    await sleep(500);
+  }
+
+  if (!stopping) {
+    throw new Error("The local API did not become ready within 60 seconds.");
+  }
 }
 
 function runCommand(command, args, options = {}) {
@@ -178,6 +196,10 @@ try {
     startProcess(pythonCommand, [
       path.join(projectRoot, "run_project.py")
     ]);
+    await waitForBackend();
+  }
+
+  if (!stopping) {
     startProcess(pythonCommand, [
       path.join(projectRoot, "mqtt_to_influx.py")
     ]);

@@ -27,32 +27,24 @@ export function updateAlertCount(count) {
 export function startSystemStatusPolling() {
   async function pollSystemStatus() {
     try {
-      const response = await fetch("/api/sensors/sample", { cache: "no-store" });
+      const response = await fetch("/api/system/status", { cache: "no-store" });
+
+      if (response.status === 401) {
+        window.location.replace("/login.html");
+        return;
+      }
 
       if (!response.ok) {
-        throw new Error(`Erro ao consultar sensores: ${response.status}`);
+        throw new Error(`Erro ao consultar o status: ${response.status}`);
       }
 
       const payload = await response.json();
 
-      if (!Array.isArray(payload.samples) || payload.samples.length === 0) {
-        throw new Error("Nenhuma leitura disponível dos sensores.");
+      if (typeof payload.active !== "boolean") {
+        throw new Error("Resposta inválida recebida para o status.");
       }
 
-      if (
-        !Number.isFinite(payload.total_samples) ||
-        !payload.samples.every((sample) =>
-          Number.isFinite(sample.sequence) &&
-          Number.isFinite(sample.temperature) &&
-          Number.isFinite(sample.vibration) &&
-          Number.isFinite(sample.temperature_threshold) &&
-          Number.isFinite(sample.vibration_threshold)
-        )
-      ) {
-        throw new Error("Resposta inválida recebida dos sensores.");
-      }
-
-      updateSystemStatus(true);
+      updateSystemStatus(payload.active);
     } catch (error) {
       console.error("Erro ao consultar status do sistema:", error);
       updateSystemStatus(false);
@@ -67,7 +59,12 @@ export function startSystemStatusPolling() {
 export function startAlertCountPolling() {
   async function pollAlertCount() {
     try {
-      const response = await fetch("/api/incidents", { cache: "no-store" });
+      const response = await fetch("/api/alerts/count", { cache: "no-store" });
+
+      if (response.status === 401) {
+        window.location.replace("/login.html");
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`Erro ao consultar alertas: ${response.status}`);
@@ -75,11 +72,11 @@ export function startAlertCountPolling() {
 
       const payload = await response.json();
 
-      if (!Array.isArray(payload.incidents)) {
+      if (!Number.isInteger(payload.count) || payload.count < 0) {
         throw new Error("Formato de alertas inválido.");
       }
 
-      updateAlertCount(payload.incidents.length);
+      updateAlertCount(payload.count);
     } catch (error) {
       console.error("Erro ao atualizar contador de alertas:", error);
     } finally {

@@ -21,7 +21,24 @@ npm run dev
 
 O comando inicia Mosquitto e InfluxDB em containers Docker, a API/simulador Python, o consumidor MQTT e o Vite. Na primeira execução, o Docker baixa as imagens dos serviços. Deixe o terminal aberto; `Ctrl+C` encerra os processos e os containers, preservando os dados do InfluxDB.
 
-Abra o endereço mostrado pelo Vite (por padrão, `http://localhost:5173/`). As páginas disponíveis são:
+Ao iniciar, o navegador abre a tela de login. Crie uma conta com nome, e-mail, senha e cargo; Produção acessa o Monitoramento da Máquina, Analista acessa o Histórico de Incidentes e Gerência acessa o Painel Gerencial. As contas ficam salvas localmente em SQLite e as senhas são armazenadas com hash.
+
+O projeto cria automaticamente estas três contas locais de demonstração:
+
+| Nome | E-mail | Senha | Cargo |
+|---|---|---|---|
+| Marcos | `marcos@vibradata.com` | `marcos123` | Produção |
+| Matheus | `matheus@vibradata.com` | `matheus123` | Analista |
+| Cintia | `cintia@vibradata.com` | `cintia123` | Gerência |
+
+Essas credenciais são fixas e fracas, apenas para desenvolvimento local. Não exponha o servidor nem reutilize essas contas em produção. O cadastro de novas contas de Gerência continua restrito; para autorizar outros e-mails, configure `MANAGEMENT_EMAILS` com uma lista separada por vírgulas. No PowerShell:
+
+```powershell
+$env:MANAGEMENT_EMAILS = "gerencia@exemplo.com"
+npm run dev
+```
+
+Abra o endereço mostrado pelo Vite (por padrão, `http://localhost:5173/`). Após o login, cada cargo é direcionado à sua dashboard:
 
 - Dashboard: `http://localhost:5173/`
 - Histórico de incidentes: `http://localhost:5173/historico.html`

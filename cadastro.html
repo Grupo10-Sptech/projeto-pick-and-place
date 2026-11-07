@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro — Pick-and-Place</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./assets/css/style.css" />
+    <link rel="stylesheet" href="./assets/css/auth.css" />
+  </head>
+  <body>
+    <main class="auth-shell">
+      <section class="auth-card">
+        <img class="auth-logo brand-logo-dark" src="images/vibra-data-logo-dark.png" alt="Vibra Data" />
+        <img class="auth-logo brand-logo-light" src="images/vibra-data-logo-light.png" alt="" aria-hidden="true" />
+        <p class="panel-label">PICK-AND-PLACE</p>
+        <h1>Crie sua conta</h1>
+        <p class="auth-description">Preencha seus dados para acessar a dashboard do seu cargo.</p>
+
+        <form id="registerForm" class="auth-form">
+          <label>
+            Nome completo
+            <input name="name" type="text" autocomplete="name" required minlength="2" maxlength="100" />
+          </label>
+          <label>
+            E-mail
+            <input name="email" type="email" autocomplete="email" required maxlength="254" />
+          </label>
+          <label>
+            Cargo
+            <select name="role" required>
+              <option value="production">Produção</option>
+              <option value="analyst">Analista</option>
+              <option value="management">Gerência</option>
+            </select>
+          </label>
+          <p class="auth-hint">O cadastro de Gerência é restrito a e-mails autorizados.</p>
+          <label>
+            Senha
+            <input name="password" type="password" autocomplete="new-password" required minlength="10" maxlength="128" />
+          </label>
+          <label>
+            Confirmar senha
+            <input name="confirmPassword" type="password" autocomplete="new-password" required minlength="10" maxlength="128" />
+          </label>
+          <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+          <button class="auth-submit" type="submit">Cadastrar</button>
+        </form>
+
+        <p class="auth-switch">Já tem uma conta? <a href="./login.html">Acessar</a></p>
+      </section>
+    </main>
+    <script type="module" src="./assets/js/register.js"></script>
+  </body>
+</html>

@@ -1,8 +1,11 @@
 
+import { requireDashboardRole } from "./auth.js";
 import {
     startAlertCountPolling,
     startSystemStatusPolling
 } from "./header-indicators.js";
+
+await requireDashboardRole("management");
 
 const periodFilter = document.getElementById("periodFilter");
 const message = document.getElementById("managementMessage");
@@ -165,6 +168,11 @@ async function loadManagementData() {
         const response = await fetch(
             `/api/management?period=${period}`
         );
+
+        if (response.status === 401) {
+            window.location.replace("/login.html");
+            return;
+        }
 
         if (!response.ok) {
             throw new Error("Falha ao consultar a API.");

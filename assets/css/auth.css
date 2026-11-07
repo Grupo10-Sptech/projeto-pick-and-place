@@ -1,0 +1,151 @@
+body:has(.auth-shell) {
+  min-width: 320px;
+  min-height: 100vh;
+  height: auto;
+  overflow: auto;
+}
+
+.auth-shell {
+  display: grid;
+  min-height: 100vh;
+  padding: 28px 16px;
+  place-items: center;
+  box-sizing: border-box;
+}
+
+.auth-card {
+  width: min(100%, 440px);
+  padding: 32px;
+  border: 1px solid var(--outline);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: 0 20px 60px var(--shadow);
+}
+
+.auth-logo {
+  display: block;
+  width: min(210px, 70%);
+  height: 72px;
+  max-height: 72px;
+  margin: 0 auto 22px;
+  object-fit: contain;
+}
+
+.auth-card > .panel-label {
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.auth-card h1 {
+  margin: 0;
+  color: var(--navy);
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  text-align: center;
+}
+
+.auth-description,
+.auth-switch,
+.auth-hint {
+  color: var(--gray);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.auth-description {
+  margin: 10px 0 24px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.auth-form input,
+.auth-form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--outline);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  color: var(--navy);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.auth-form input:focus,
+.auth-form select:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.auth-hint {
+  margin: -9px 0 0;
+  font-size: 0.78rem;
+  text-align: left;
+}
+
+.auth-message {
+  min-height: 1.25em;
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.88rem;
+}
+
+.auth-message.success {
+  color: var(--success);
+}
+
+.auth-submit {
+  min-height: 46px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #078b84, #2869a5);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.auth-switch {
+  margin: 20px 0 0;
+  font-size: 0.9rem;
+}
+
+.auth-switch a {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.auth-logout-button {
+  padding: 8px 12px;
+  border: 1px solid var(--outline);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--navy);
+  font: inherit;
+  cursor: pointer;
+}
+
+.auth-logout-button:disabled {
+  opacity: 0.6;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 20px;
+  }
+}

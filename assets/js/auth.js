@@ -21,7 +21,31 @@ function showAuthMessage(message, isError = true) {
   element.classList.toggle("success", !isError);
 }
 
+function setupAuthTheme() {
+  const toggle = document.getElementById("themeToggle");
+  const savedTheme = localStorage.getItem("pick-and-place-theme");
+  document.documentElement.dataset.theme = savedTheme === "light" ? "light" : "dark";
+
+  function updateLabel() {
+    const isLight = document.documentElement.dataset.theme === "light";
+    const label = isLight ? "Ativar tema escuro" : "Ativar tema claro";
+    toggle.setAttribute("aria-label", label);
+    toggle.setAttribute("title", label);
+  }
+
+  updateLabel();
+  toggle.addEventListener("click", () => {
+    const nextTheme =
+      document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = nextTheme;
+    localStorage.setItem("pick-and-place-theme", nextTheme);
+    updateLabel();
+  });
+}
+
 export async function initializeAuthPage(formId, endpoint) {
+  setupAuthTheme();
+
   try {
     const user = await getCurrentUser();
     if (user) {
@@ -47,7 +71,12 @@ export async function initializeAuthPage(formId, endpoint) {
 
     const body = Object.fromEntries(formData.entries());
     delete body.confirmPassword;
-    if (typeof body.email === "string") body.email = body.email.trim();
+    if (typeof body.emailLocal === "string") {
+      body.email = `${body.emailLocal.trim()}@vibradata.com`;
+      delete body.emailLocal;
+    } else if (typeof body.email === "string") {
+      body.email = body.email.trim();
+    }
 
     const submitButton = form.querySelector('button[type="submit"]');
     submitButton.disabled = true;

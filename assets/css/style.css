@@ -1892,6 +1892,33 @@ html[data-theme="light"] .panel:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
 }
 
+.auth-logout-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 15px;
+  border: 1px solid var(--outline);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--gray);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.auth-logout-button:hover:not(:disabled) {
+  border-color: rgba(66, 223, 208, 0.25);
+  background: var(--glow-cyan);
+  color: var(--teal);
+}
+
+.auth-logout-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .page-nav-link[hidden] {
   display: none;
 }

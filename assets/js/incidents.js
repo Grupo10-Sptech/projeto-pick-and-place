@@ -1,3 +1,8 @@
+import {
+  startSystemStatusPolling,
+  updateAlertCount
+} from "./header-indicators.js";
+
 const incidentsUrl = "./api/incidents";
 
 function setupHistoryTheme() {
@@ -112,8 +117,6 @@ function renderIncidentList(containerId, countId, incidents, type, highlightedIn
 }
 
 function renderIncidents(incidents) {
-  const total = document.getElementById("incidentTotal");
-
   const highlightedIncidents = new Set(
     [...incidents]
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
@@ -128,7 +131,7 @@ function renderIncidents(incidents) {
     isTemperatureIncident(incident.reason)
   );
 
-  total.textContent = incidents.length.toLocaleString("pt-BR");
+  updateAlertCount(incidents.length);
 
   renderIncidentList(
     "vibrationList",
@@ -148,10 +151,6 @@ function renderIncidents(incidents) {
 }
 
 async function loadIncidents() {
-  const status = document.getElementById("historyStatus");
-  const statusText = document.getElementById("historyStatusText");
-  const lastUpdate = document.getElementById("lastUpdate");
-
   try {
     const response = await fetch(incidentsUrl, { cache: "no-store" });
 
@@ -166,29 +165,13 @@ async function loadIncidents() {
     }
 
     renderIncidents(payload.incidents);
-
-    status.classList.remove("offline");
-    statusText.textContent = "Histórico atualizado";
-    if (lastUpdate) {
-      lastUpdate.textContent =
-        `Última atualização: ${new Date().toLocaleTimeString("pt-BR")}`;
-    }
   } catch (error) {
     console.error("Erro ao carregar histórico:", error);
-
-    status?.classList.add("offline");
-
-    if (statusText) {
-      statusText.textContent = "Erro ao atualizar histórico";
-    }
-
-    if (lastUpdate) {
-      lastUpdate.textContent = `Detalhe do erro: ${error.message}`;
-    }
   } finally {
     window.setTimeout(loadIncidents, 10000);
   }
 }
 
 setupHistoryTheme();
+startSystemStatusPolling();
 loadIncidents();

@@ -96,18 +96,7 @@ def on_message(client, userdata, message):
                 record=incident_point,
             )
 
-            print(
-                f"INCIDENTE GRAVADO: motivo={reason}, "
-                f"temperatura={temperature} °C, "
-                f"vibração={vibration} g, horário={timestamp}"
-            )
-
         incident_condition_active = incident_active
-
-        print(
-            f"Leitura gravada: temperatura={temperature} °C, "
-            f"vibração={vibration} g, horário={timestamp}"
-        )
 
     except Exception as error:
         print(f"Erro ao processar mensagem: {error}")

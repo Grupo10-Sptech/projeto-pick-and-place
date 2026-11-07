@@ -34,6 +34,21 @@
       <img class="brand-logo brand-logo-dark" src="images/vibra-data-logo-dark.png" alt="Vibra Data">
       <h1>Painel Gerencial</h1>
     </div>
+
+    <div class="status-group">
+      <div class="status-badge offline" id="systemStatus" role="status" aria-live="polite">
+        <span class="dot"></span>
+        <span id="statusText">Verificando sistema</span>
+      </div>
+      <div class="history-notifications" id="alertBell" role="img"
+        aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+          <path d="M10 21h4"></path>
+        </svg>
+        <span class="history-notifications-count" id="alertCount">--</span>
+      </div>
+    </div>
   </header>
 
   <nav class="page-nav" aria-label="Navegação principal">

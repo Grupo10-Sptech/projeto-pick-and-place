@@ -35,9 +35,16 @@
         </div>
 
         <div class="status-group">
-          <div class="status-badge" id="historyStatus">
+          <div class="status-badge offline" id="systemStatus" role="status" aria-live="polite">
             <span class="dot"></span>
-            <span id="historyStatusText">Consultando registros</span>
+            <span id="statusText">Verificando sistema</span>
+          </div>
+          <div class="history-notifications" id="alertBell" role="img" aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+              <path d="M10 21h4"></path>
+            </svg>
+            <span class="history-notifications-count" id="alertCount">--</span>
           </div>
         </div>
       </header>
@@ -50,18 +57,6 @@
 
       <main class="views">
         <section class="view-panel active history-view">
-          <section class="history-hero">
-            <div>
-              <p class="panel-label">MONITORAMENTO · EVENTOS</p>
-              <h2>Registro de incidentes da máquina</h2>
-              <p>Consulte as ocorrências detectadas pelos sensores de temperatura e vibração.</p>
-            </div>
-            <div class="history-summary">
-              <span class="history-summary-label">Incidentes registrados</span>
-              <strong id="incidentTotal">--</strong>
-            </div>
-          </section>
-
           <section class="history-columns">
 
           <section class="history-panel vibration-panel">
@@ -100,17 +95,6 @@
       </main>
     </div>
 
-    <dialog class="alert-modal" id="sensorAlert" aria-labelledby="alertTitle" aria-describedby="alertMessage">
-      <div class="alert-modal-card">
-        <div class="alert-modal-icon" aria-hidden="true">!</div>
-        <p class="alert-modal-eyebrow">ALERTA CRÍTICO · SENSORES</p>
-        <strong class="alert-modal-title" id="alertTitle">Temperatura e vibração elevadas</strong>
-        <p class="alert-modal-message" id="alertMessage"></p>
-        <button class="alert-modal-action" id="acknowledgeAlert" type="button">Reconhecer alerta</button>
-      </div>
-    </dialog>
-
-    <script type="module" src="./assets/js/sensor-alert.js"></script>
     <script type="module" src="./assets/js/incidents.js"></script>
   </body>
 </html>

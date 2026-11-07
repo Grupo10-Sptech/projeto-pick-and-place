@@ -6,10 +6,11 @@ import threading
 import time
 import webbrowser
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs
+from zoneinfo import ZoneInfo
 
 import paho.mqtt.client as mqtt
 from influxdb_client import InfluxDBClient
@@ -22,7 +23,6 @@ from scripts.simulate_sensors import (
 
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
-INCIDENT_FILE = DATA_DIR / "incidents.json"
 
 MQTT_HOST = "127.0.0.1"
 MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
@@ -38,8 +38,6 @@ HTTP_PORT = 8000
 sample_lock = threading.Lock()
 live_samples = deque(maxlen=60)
 live_sample_count = 0
-incidents = []
-incident_condition_active = False
 
 
 class ProjectRequestHandler(SimpleHTTPRequestHandler):
@@ -136,57 +134,60 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
         with sample_lock:
             samples = list(live_samples)
             sample_count = live_sample_count
-            today = datetime.now().astimezone().date().isoformat()
-            incidents_today = sum(
-                incident["date"] == today for incident in incidents
-            )
 
         if not samples:
             self.send_error(503, "Leituras dos sensores ainda não disponíveis")
             return
 
+        try:
+            machine_stops_today = get_machine_stops_today_count()
+        except Exception as error:
+            print(f"Erro ao consultar paradas da máquina no InfluxDB: {error}")
+            self.send_json({
+                "error": "Não foi possível consultar as paradas da máquina."
+            }, 503)
+            return
+
         self.send_json({
             "samples": samples,
             "total_samples": sample_count,
-            "incidents_today": incidents_today,
+            "machine_stops_today": machine_stops_today,
         })
 
 
-def load_incidents():
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+def get_machine_stops_today_count():
+    token = os.environ.get("INFLUX_TOKEN")
+    if not token:
+        raise RuntimeError("INFLUX_TOKEN não configurado.")
 
-    if not INCIDENT_FILE.exists():
-        return []
+    local_timezone = ZoneInfo("America/Sao_Paulo")
+    today = datetime.now(local_timezone).date()
+    start = datetime.combine(today, datetime.min.time(), local_timezone)
+    stop = start + timedelta(days=1)
+    start_utc = start.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    stop_utc = stop.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
-    payload = json.loads(INCIDENT_FILE.read_text(encoding="utf-8"))
+    query = f'''from(bucket: "{INFLUX_BUCKET}")
+  |> range(start: {start_utc}, stop: {stop_utc})
+  |> filter(fn: (r) => r._measurement == "sensor_incident")
+  |> filter(fn: (r) => r.reason == "temperatura_e_vibracao")
+  |> filter(fn: (r) => r._field == "incident")
+  |> group()
+  |> count()'''
 
-    if not isinstance(payload, list):
-        raise ValueError("Formato inválido no arquivo de incidentes.")
+    with InfluxDBClient(
+        url=INFLUX_URL,
+        token=token,
+        org=INFLUX_ORG,
+    ) as client:
+        tables = client.query_api().query(query, org=INFLUX_ORG)
 
-    today = datetime.now().astimezone().date().isoformat()
-
-    return [
-        incident for incident in payload
-        if isinstance(incident, dict)
-        and incident.get("date") == today
-        and isinstance(incident.get("timestamp"), str)
-    ]
-
-
-def save_incidents():
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-    temporary_file = INCIDENT_FILE.with_suffix(".tmp")
-    temporary_file.write_text(
-        json.dumps(incidents, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-    temporary_file.replace(INCIDENT_FILE)
+    return sum(int(record.get_value()) for table in tables for record in table.records)
 
 
 def load_historical_samples():
     """Carrega o histórico existente, sem executar o simulador CLI."""
-    global live_sample_count, incident_condition_active
+    global live_sample_count
 
     history_file = DATA_DIR / "sensor_data.json"
 
@@ -216,14 +217,6 @@ def load_historical_samples():
                 })
                 live_sample_count += 1
 
-            if rows:
-                last_temp = rows[-1][1]
-                last_vib = rows[-1][2]
-                incident_condition_active = (
-                    last_temp > TEMPERATURE_THRESHOLD_C
-                    and last_vib > VIBRATION_THRESHOLD_G
-                )
-
         print(f"Histórico carregado: {len(rows)} leituras.")
 
     except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
@@ -231,7 +224,7 @@ def load_historical_samples():
 
 
 def generate_samples(stop_event, mqtt_client):
-    global incident_condition_active, live_sample_count
+    global live_sample_count
 
     sample_index = 0
     next_sample_at = time.monotonic()
@@ -242,34 +235,7 @@ def generate_samples(stop_event, mqtt_client):
         recorded_at = datetime.now().astimezone()
         timestamp = recorded_at.isoformat(timespec="seconds")
 
-        incident_active = (
-            temperature > TEMPERATURE_THRESHOLD_C
-            or vibration > VIBRATION_THRESHOLD_G
-        )
-
         with sample_lock:
-            if incident_active and not incident_condition_active:
-                temperature_alert = temperature > TEMPERATURE_THRESHOLD_C
-                vibration_alert = vibration > VIBRATION_THRESHOLD_G
-
-                if temperature_alert and vibration_alert:
-                    reason = "temperatura_e_vibracao"
-                elif temperature_alert:
-                    reason = "temperatura"
-                else:
-                    reason = "vibracao"
-
-                incidents.append({
-                    "date": recorded_at.date().isoformat(),
-                    "timestamp": timestamp,
-                    "temperature": temperature,
-                    "vibration": vibration,
-                    "reason": reason,
-                })
-                save_incidents()
-
-            incident_condition_active = incident_active
-
             sample = {
                 "sequence": live_sample_count,
                 "timestamp": timestamp,
@@ -298,22 +264,13 @@ def generate_samples(stop_event, mqtt_client):
         except Exception as error:
             print(f"Erro na publicação MQTT: {error}")
 
-        print(
-            f"Leitura {sample['sequence']}: "
-            f"temperatura={temperature} °C, "
-            f"vibração={vibration} g"
-        )
-
         sample_index += 1
         next_sample_at += 1.0
         stop_event.wait(max(0, next_sample_at - time.monotonic()))
 
 
 def main():
-    global incidents
-
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    incidents = load_incidents()
     load_historical_samples()
 
     mqtt_client = mqtt.Client(

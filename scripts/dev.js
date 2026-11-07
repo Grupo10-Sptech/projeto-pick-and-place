@@ -39,7 +39,7 @@ function runCommand(command, args, options = {}) {
     });
 
     child.once("error", reject);
-    child.once("close", (code) => {
+    child.once("exit", (code) => {
       if (code === 0) resolve();
       else reject(new Error(`${command} exited with code ${code ?? "unknown"}`));
     });
@@ -130,17 +130,17 @@ async function shutdown(exitCode) {
   if (stopping) return;
   stopping = true;
 
+  const childExits = children.map((child) =>
+    child.pid === undefined || child.exitCode !== null || child.signalCode !== null
+      ? Promise.resolve()
+      : new Promise((resolve) => child.once("exit", resolve))
+  );
+
   for (const child of children) {
     if (child.exitCode === null && child.signalCode === null) child.kill();
   }
 
-  await Promise.all(
-    children.map((child) =>
-      child.exitCode !== null || child.signalCode !== null
-        ? Promise.resolve()
-        : new Promise((resolve) => child.once("close", resolve))
-    )
-  );
+  await Promise.all(childExits);
 
   if (composeStarted) {
     try {
@@ -156,6 +156,7 @@ async function shutdown(exitCode) {
 
 process.once("SIGINT", () => void shutdown(0));
 process.once("SIGTERM", () => void shutdown(0));
+if (isWindows) process.once("SIGBREAK", () => void shutdown(0));
 
 try {
   await ensureDockerIsRunning();

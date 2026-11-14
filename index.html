@@ -42,25 +42,38 @@
             <span class="dot"></span>
             <span id="statusText">Verificando sistema</span>
           </div>
-          <div class="history-notifications" id="alertBell" role="img"
-            aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
-              <path d="M10 21h4"></path>
-            </svg>
-            <span class="history-notifications-count" id="alertCount">--</span>
+          <div class="history-notifications-wrap">
+            <button class="history-notifications" id="alertBell" type="button"
+              aria-haspopup="dialog" aria-expanded="false"
+              aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                <path d="M10 21h4"></path>
+              </svg>
+              <span class="history-notifications-count" id="alertCount">--</span>
+            </button>
           </div>
         </div>
       </header>
 
-      <nav class="page-nav" aria-label="Navegação principal">
-        <a class="page-nav-link active" href="index.html" aria-current="page">Dashboard</a>
-        <a class="page-nav-link" href="historico.html">Histórico de Incidentes</a>
-        <a class="page-nav-link" href="gerencial.html">Painel Gerencial</a>
-      </nav>
-
       <main class="views">
         <section id="overviewView" class="view-panel active">
+          <div class="dashboard-machine-filter">
+            <label for="machineFilter">Máquina monitorada</label>
+            <select id="machineFilter" aria-label="Selecionar máquina">
+              <option value="pick-and-place-01">Máquina 1</option>
+              <option value="pick-and-place-02">Máquina 2</option>
+              <option value="pick-and-place-03">Máquina 3</option>
+              <option value="pick-and-place-04">Máquina 4</option>
+              <option value="pick-and-place-05">Máquina 5</option>
+              <option value="pick-and-place-06">Máquina 6</option>
+              <option value="pick-and-place-07">Máquina 7</option>
+              <option value="pick-and-place-08">Máquina 8</option>
+              <option value="pick-and-place-09">Máquina 9</option>
+              <option value="pick-and-place-10">Máquina 10</option>
+            </select>
+          </div>
+
           <section class="kpi-grid">
             <article class="kpi-card">
               <div class="kpi-header">

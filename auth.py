@@ -139,6 +139,10 @@ def create_user(name, email, password, role):
         raise RegistrationError("Informe um nome entre 2 e 100 caracteres.")
     if len(email) > 254 or not EMAIL_PATTERN.fullmatch(email):
         raise RegistrationError("Informe um e-mail válido.")
+    if not email.endswith("@vibradata.com"):
+        raise RegistrationError(
+            "Use um e-mail com o domínio @vibradata.com."
+        )
     if not isinstance(password, str) or not 10 <= len(password) <= 128:
         raise RegistrationError("A senha deve ter entre 10 e 128 caracteres.")
     if not isinstance(role, str) or role not in ROLES:

@@ -13,9 +13,19 @@
   <body>
     <main class="auth-shell">
       <section class="auth-card">
-        <img class="auth-logo brand-logo-dark" src="images/vibra-data-logo-dark.png" alt="Vibra Data" />
-        <img class="auth-logo brand-logo-light" src="images/vibra-data-logo-light.png" alt="" aria-hidden="true" />
-        <p class="panel-label">PICK-AND-PLACE</p>
+        <button class="theme-toggle auth-theme-toggle" id="themeToggle" type="button"
+          aria-label="Ativar tema claro" title="Ativar tema claro">
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>
+          </svg>
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.2 15.5A8.5 8.5 0 0 1 8.5 3.8 8.5 8.5 0 1 0 20.2 15.5Z"></path>
+            <path d="m16.5 3 .5 1.5 1.5.5-1.5.5-.5 1.5L16 5.5l-1.5-.5 1.5-.5.5-1.5Z"></path>
+          </svg>
+        </button>
+        <img class="auth-logo auth-logo-dark" src="images/vibra-data-logo-dark.png" alt="Vibra Data" />
+        <img class="auth-logo auth-logo-light" src="images/vibra-data-logo-light.png" alt="" aria-hidden="true" />
         <h1>Crie sua conta</h1>
         <p class="auth-description">Preencha seus dados para acessar a dashboard do seu cargo.</p>
 
@@ -26,7 +36,12 @@
           </label>
           <label>
             E-mail
-            <input name="email" type="email" autocomplete="email" required maxlength="254" />
+            <span class="auth-email-field">
+              <input name="emailLocal" type="text" autocomplete="username" required
+                maxlength="64" pattern="[A-Za-z0-9._%+-]+"
+                aria-label="Parte do e-mail antes de @vibradata.com" />
+              <span class="auth-email-domain">@vibradata.com</span>
+            </span>
           </label>
           <label>
             Cargo
@@ -47,6 +62,7 @@
           </label>
           <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
           <button class="auth-submit" type="submit">Cadastrar</button>
+          <a class="auth-back-button" href="./login.html">Voltar</a>
         </form>
 
         <p class="auth-switch">Já tem uma conta? <a href="./login.html">Acessar</a></p>

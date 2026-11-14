@@ -1,0 +1,272 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" fill="none">
+  <defs>
+    <style>
+      .arm-base-motion {
+        transform-box: view-box;
+        transform-origin: 586px 474px;
+        animation: arm-base-cycle 7s cubic-bezier(.45, 0, .2, 1) infinite;
+      }
+
+      .arm-shoulder-motion {
+        transform-box: view-box;
+        transform-origin: 489px 371px;
+        animation: arm-shoulder-cycle 7s cubic-bezier(.45, 0, .2, 1) infinite;
+      }
+
+      .arm-wrist-motion {
+        transform-box: view-box;
+        transform-origin: 718px 400px;
+        animation: arm-wrist-cycle 7s cubic-bezier(.45, 0, .2, 1) infinite;
+      }
+
+      .gripper-left-motion {
+        transform-box: view-box;
+        transform-origin: 718px 500px;
+        animation: gripper-left-cycle 7s ease-in-out infinite;
+      }
+
+      .gripper-right-motion {
+        transform-box: view-box;
+        transform-origin: 756px 500px;
+        animation: gripper-right-cycle 7s ease-in-out infinite;
+      }
+
+      .product-motion {
+        animation: product-flow 7s linear infinite;
+      }
+
+      .product-motion-delayed {
+        animation-delay: -3.5s;
+      }
+
+      .belt-flow {
+        animation: belt-flow 1.4s linear infinite;
+      }
+
+      .status-light {
+        animation: status-pulse .7s ease-in-out infinite alternate;
+      }
+
+      .scanline {
+        animation: scan-cycle 3.2s ease-in-out infinite;
+      }
+
+      .circuit-pulse {
+        animation: circuit-pulse 3.6s ease-in-out infinite;
+      }
+
+      .circuit-flow {
+        animation: circuit-flow 2.8s linear infinite;
+      }
+
+      @keyframes arm-base-cycle {
+        0%, 8%, 100% { transform: rotate(0deg); }
+        26% { transform: rotate(-13deg); }
+        43% { transform: rotate(-13deg); }
+        65% { transform: rotate(9deg); }
+        81% { transform: rotate(9deg); }
+      }
+
+      @keyframes arm-shoulder-cycle {
+        0%, 8%, 100% { transform: rotate(0deg); }
+        26% { transform: rotate(16deg); }
+        43% { transform: rotate(16deg); }
+        65% { transform: rotate(-12deg); }
+        81% { transform: rotate(-12deg); }
+      }
+
+      @keyframes arm-wrist-cycle {
+        0%, 14%, 100% { transform: rotate(0deg); }
+        32%, 45% { transform: rotate(-19deg); }
+        65%, 80% { transform: rotate(15deg); }
+      }
+
+      @keyframes gripper-left-cycle {
+        0%, 33%, 55%, 100% { transform: translateX(-4px); }
+        39%, 49% { transform: translateX(4px); }
+      }
+
+      @keyframes gripper-right-cycle {
+        0%, 33%, 55%, 100% { transform: translateX(4px); }
+        39%, 49% { transform: translateX(-4px); }
+      }
+
+      @keyframes product-flow {
+        0%, 10% { transform: translateX(0); opacity: 1; }
+        34% { transform: translateX(135px); opacity: 1; }
+        52% { transform: translateX(135px); opacity: 1; }
+        78% { transform: translateX(280px); opacity: 1; }
+        94%, 100% { transform: translateX(310px); opacity: 0; }
+      }
+
+      @keyframes belt-flow {
+        0%, 34% { stroke-dashoffset: 0; }
+        52% { stroke-dashoffset: -18; }
+        100% { stroke-dashoffset: -44; }
+      }
+
+      @keyframes status-pulse {
+        from { opacity: .48; }
+        to { opacity: 1; }
+      }
+
+      @keyframes scan-cycle {
+        0% { transform: translateY(0); opacity: 0; }
+        10% { opacity: .75; }
+        90% { opacity: .55; }
+        100% { transform: translateY(330px); opacity: 0; }
+      }
+
+      @keyframes circuit-pulse {
+        0%, 100% { opacity: .58; }
+        50% { opacity: 1; }
+      }
+
+      @keyframes circuit-flow {
+        to { stroke-dashoffset: -56; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+    <linearGradient id="frame" x1="200" y1="120" x2="960" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#42dfd0" stop-opacity=".7"/>
+      <stop offset="1" stop-color="#82aaff" stop-opacity=".48"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="270" y1="150" x2="900" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#42dfd0" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#82aaff" stop-opacity=".045"/>
+    </linearGradient>
+    <linearGradient id="arm" x1="410" y1="470" x2="790" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#82aaff" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#42dfd0" stop-opacity=".8"/>
+    </linearGradient>
+    <pattern id="belt" width="18" height="18" patternTransform="rotate(-20)" patternUnits="userSpaceOnUse">
+      <path d="M0 0v18" stroke="#82aaff" stroke-opacity=".22" stroke-width="3"/>
+    </pattern>
+    <linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#42dfd0" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#42dfd0" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#42dfd0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <g stroke="url(#frame)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M146 650h908l-42 56H188z" fill="url(#panel)" stroke-width="3"/>
+    <path d="M188 706v34m824-34v34M246 706v34m708-34v34" stroke-width="3" opacity=".58"/>
+    <path d="M158 740h884" stroke-width="4" opacity=".48"/>
+
+    <path d="M231 630V174q0-22 22-22h694q22 0 22 22v456" fill="url(#panel)" stroke-width="5"/>
+    <path d="M256 610V187h665v423M231 212h716M231 610h716" stroke-width="3" opacity=".74"/>
+    <path d="M264 196h649v403H264z" stroke-width="1.5" stroke-dasharray="5 9" opacity=".44"/>
+    <path d="M247 174h704M276 152v62m626-62v62" stroke-width="4" opacity=".8"/>
+    <path d="M268 231h-25m679 0h-25" stroke-width="5" opacity=".8"/>
+
+    <path d="M284 630V222h92v408m442 0V222h92v408" fill="url(#panel)" stroke-width="3" opacity=".82"/>
+    <path d="M301 244h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59" stroke-width="2" opacity=".38"/>
+    <path d="M835 244h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59m-59 24h59" stroke-width="2" opacity=".38"/>
+
+    <path d="M322 630V544h622v86" stroke-width="4" opacity=".75"/>
+    <path d="M302 544h659v37H302z" fill="url(#belt)" stroke-width="3"/>
+    <path class="belt-flow" d="M312 562h640" stroke="#42dfd0" stroke-width="2" stroke-dasharray="3 24" opacity=".8"/>
+    <path d="M312 581h639v31H312z" fill="url(#panel)" stroke-width="3"/>
+    <path d="M326 612v18m50-18v18m50-18v18m50-18v18m50-18v18m50-18v18m50-18v18m50-18v18m50-18v18m50-18v18m50-18v18m50-18v18" stroke-width="2" opacity=".55"/>
+    <circle cx="329" cy="598" r="13" fill="#09121f" stroke-width="3"/>
+    <circle cx="934" cy="598" r="13" fill="#09121f" stroke-width="3"/>
+
+    <path d="M365 544V492h61v52m357 0v-52h61v52" fill="url(#panel)" stroke-width="3"/>
+    <path d="M377 492v-18h37v18m381 0v-18h37v18" stroke-width="3"/>
+    <path d="M384 470h23m381 0h23" stroke-width="3"/>
+    <circle class="status-light" cx="395" cy="462" r="8" fill="#42dfd0" stroke-width="2"/>
+    <circle class="status-light" cx="800" cy="462" r="8" fill="#82aaff" stroke-width="2"/>
+
+    <g class="product-motion">
+      <path d="M405 541 470 504l75 43-65 39z" fill="url(#panel)" stroke-width="3"/>
+      <path d="m470 504 1-44 75 42-1 44m-65 40 1-43" stroke-width="3"/>
+      <path d="m424 541 65 37 37-22-65-37z" stroke-width="2" opacity=".55"/>
+      <path d="m479 478 27-16 31 17-28 16z" fill="url(#panel)" stroke-width="2"/>
+      <path d="m479 478 1 25m57-24v25m-29 16v-25" stroke-width="2" opacity=".7"/>
+    </g>
+    <g class="product-motion product-motion-delayed">
+      <path d="M405 541 470 504l75 43-65 39z" fill="url(#panel)" stroke-width="3"/>
+      <path d="m470 504 1-44 75 42-1 44m-65 40 1-43" stroke-width="3"/>
+      <path d="m424 541 65 37 37-22-65-37z" stroke-width="2" opacity=".55"/>
+      <path d="m479 478 27-16 31 17-28 16z" fill="url(#panel)" stroke-width="2"/>
+      <path d="m479 478 1 25m57-24v25m-29 16v-25" stroke-width="2" opacity=".7"/>
+    </g>
+
+    <g class="arm-base-motion">
+      <path d="M586 542V474" stroke-width="24" opacity=".38"/>
+      <path d="M586 542V474" stroke-width="5"/>
+      <path d="M586 474 489 371" stroke="url(#arm)" stroke-width="57" opacity=".25"/>
+      <path d="M586 474 489 371" stroke="url(#arm)" stroke-width="37"/>
+      <path d="M586 474 489 371" stroke="#e4ffff" stroke-opacity=".5" stroke-width="3"/>
+      <path d="m572 460 28-27m-98-47 27-27" stroke="#07101d" stroke-opacity=".58" stroke-width="5"/>
+      <circle cx="586" cy="474" r="42" fill="#101d2d" stroke-width="6"/>
+      <circle cx="586" cy="474" r="23" fill="url(#panel)" stroke-width="4"/>
+      <circle cx="489" cy="371" r="36" fill="#101d2d" stroke-width="6"/>
+      <circle cx="489" cy="371" r="19" fill="url(#panel)" stroke-width="4"/>
+      <path d="m574 458 24 30m-121-132 24 29" stroke="#d7ffff" stroke-opacity=".65" stroke-width="3"/>
+
+      <g class="arm-shoulder-motion">
+        <path d="m489 371 145-44" stroke="url(#arm)" stroke-width="49" opacity=".25"/>
+        <path d="m489 371 145-44" stroke="url(#arm)" stroke-width="31"/>
+        <path d="m489 371 145-44" stroke="#e4ffff" stroke-opacity=".5" stroke-width="3"/>
+        <path d="m512 364 13 29m82-83 12 30" stroke="#07101d" stroke-opacity=".58" stroke-width="5"/>
+        <circle cx="634" cy="327" r="32" fill="#101d2d" stroke-width="6"/>
+        <circle cx="634" cy="327" r="16" fill="url(#panel)" stroke-width="4"/>
+        <path d="m625 310 19 34" stroke="#d7ffff" stroke-opacity=".65" stroke-width="3"/>
+
+        <path d="m634 327 84 73" stroke="url(#arm)" stroke-width="39" opacity=".25"/>
+        <path d="m634 327 84 73" stroke="url(#arm)" stroke-width="23"/>
+        <path d="m634 327 84 73" stroke="#e4ffff" stroke-opacity=".5" stroke-width="2.5"/>
+        <circle cx="718" cy="400" r="27" fill="#101d2d" stroke-width="5"/>
+        <circle cx="718" cy="400" r="12" fill="url(#panel)" stroke-width="3"/>
+
+        <g class="arm-wrist-motion">
+          <path d="m718 400 20 57m-34-50 24-9m-19 25 25-8m-20 24 24-8" stroke-width="7"/>
+          <path d="m731 444 27 9-5 25-28-7z" fill="url(#panel)" stroke-width="4"/>
+          <g class="gripper-left-motion">
+            <path d="m725 472-10 34M711 506v16m-9 0h18" fill="url(#panel)" stroke-width="4"/>
+          </g>
+          <g class="gripper-right-motion">
+            <path d="m767 472 7 34m-11 0v16m-9 0h19" fill="url(#panel)" stroke-width="4"/>
+          </g>
+        </g>
+      </g>
+    </g>
+
+    <path d="M447 228h274v15H447z" fill="url(#panel)" stroke-width="3"/>
+    <path d="M474 243v45m220-45v45" stroke-width="8" opacity=".72"/>
+    <path d="M447 288h274" stroke-width="4" opacity=".86"/>
+    <path d="M565 289v53" stroke-width="6"/>
+    <path d="M546 342h38v20h-38z" fill="url(#panel)" stroke-width="3"/>
+    <path d="M553 362v20m24-20v20m-30 0h36" stroke-width="4"/>
+
+    <path d="M231 653h716m-668 0v34m619-34v34" stroke-width="3" opacity=".58"/>
+    <path d="M195 687h788" stroke-width="2" opacity=".4"/>
+    <path d="M162 766h876" stroke-width="2" stroke-dasharray="4 12" opacity=".3"/>
+
+    <g class="circuit-pulse">
+      <path class="circuit-flow" d="M204 292h-44v-55h-50m888 79h42v-62h52M205 469h-55v53h-44m904 17h57v-52h45" stroke-width="2" stroke-dasharray="5 9" opacity=".62"/>
+      <circle cx="110" cy="237" r="5" fill="#82aaff"/>
+      <circle cx="1092" cy="254" r="5" fill="#42dfd0"/>
+      <circle cx="106" cy="522" r="5" fill="#42dfd0"/>
+      <circle cx="1112" cy="487" r="5" fill="#82aaff"/>
+      <path d="M164 318h53m-53 12h31m793-12h57m-57 12h35M156 548h54m-54 12h32m806-12h57m-57 12h34" stroke-width="2" opacity=".5"/>
+    </g>
+    <path class="scanline" d="M264 248h649" stroke="#42dfd0" stroke-width="2" stroke-dasharray="180 470" opacity=".4"/>
+  </g>
+
+  <g stroke="#82aaff" stroke-linecap="round" stroke-linejoin="round" opacity=".58">
+    <path d="M258 139h116m-116 10h68M824 139h116m-116 10h68"/>
+    <path d="M270 124v28m620-28v28"/>
+    <circle cx="259" cy="139" r="4" fill="#82aaff"/>
+    <circle cx="941" cy="139" r="4" fill="#82aaff"/>
+    <path d="M386 174h43m342 0h43M386 185h24m380-11h24"/>
+  </g>
+</svg>

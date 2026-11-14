@@ -26,7 +26,11 @@ from auth import (
     get_session_user,
     initialize_auth_database,
 )
+from incident_report import build_incidents_workbook
+from machine_catalog import MACHINE_IDS, MACHINE_NAMES
 from management_api import get_management_data
+from scripts.incident_schedule import build_live_incident_schedule
+from scripts.seed_demo_data import seed_demo_data
 from scripts.simulate_sensors import (
     TEMPERATURE_THRESHOLD_C,
     VIBRATION_THRESHOLD_G,
@@ -34,7 +38,6 @@ from scripts.simulate_sensors import (
 )
 
 ROOT = Path(__file__).resolve().parent
-DATA_DIR = ROOT / "data"
 
 MQTT_HOST = "127.0.0.1"
 MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
@@ -48,8 +51,8 @@ HTTP_HOST = "127.0.0.1"
 HTTP_PORT = 8000
 
 sample_lock = threading.Lock()
-live_samples = deque(maxlen=60)
-live_sample_count = 0
+live_samples = {machine_id: deque(maxlen=60) for machine_id in MACHINE_IDS}
+live_sample_count = {machine_id: 0 for machine_id in MACHINE_IDS}
 
 
 class ProjectRequestHandler(SimpleHTTPRequestHandler):
@@ -151,8 +154,8 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
             if not self.require_role():
                 return
             with sample_lock:
-                samples = list(live_samples)
-            self.send_json({"active": bool(samples)})
+                has_samples = any(live_samples.values())
+            self.send_json({"active": has_samples})
             return
 
         if route == "/api/alerts/count":
@@ -169,23 +172,56 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
   |> filter(fn: (r) => r._field == "incident")
   |> group()
   |> count()'''
+            recent_incidents_query = f'''from(bucket: "{INFLUX_BUCKET}")
+  |> range(start: -30d)
+  |> filter(fn: (r) => r._measurement == "sensor_incident")
+  |> filter(fn: (r) => r._field == "incident")
+  |> keep(columns: ["_time", "machine", "reason"])
+  |> group()
+  |> sort(columns: ["_time"], desc: true)
+  |> limit(n: 10)'''
             try:
                 with InfluxDBClient(
                     url=INFLUX_URL,
                     token=token,
                     org=INFLUX_ORG,
                 ) as client:
-                    tables = client.query_api().query(query, org=INFLUX_ORG)
+                    query_api = client.query_api()
+                    tables = query_api.query(query, org=INFLUX_ORG)
+                    recent_incident_tables = query_api.query(
+                        recent_incidents_query,
+                        org=INFLUX_ORG,
+                    )
                 count = sum(
                     int(record.get_value())
                     for table in tables
                     for record in table.records
                 )
-                self.send_json({"count": count})
+                incidents = []
+                for table in recent_incident_tables:
+                    for record in table.records:
+                        machine_id = record.values.get("machine")
+                        incidents.append({
+                            "timestamp": record.get_time().isoformat().replace(
+                                "+00:00",
+                                "Z",
+                            ),
+                            "machine_name": MACHINE_NAMES.get(
+                                machine_id,
+                                "Máquina não identificada",
+                            ),
+                            "reason": record.values.get("reason") or "incidente",
+                        })
+
+                incidents.sort(
+                    key=lambda incident: incident["timestamp"],
+                    reverse=True,
+                )
+                self.send_json({"count": count, "incidents": incidents})
             except Exception as error:
-                print(f"Erro ao consultar a contagem de alertas: {error}")
+                print(f"Erro ao consultar alertas e incidentes recentes: {error}")
                 self.send_json({
-                    "error": "Não foi possível consultar a contagem de alertas."
+                    "error": "Não foi possível consultar os alertas recentes."
                 }, 503)
             return
 
@@ -212,8 +248,13 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
         if route == "/api/sensors/minute-samples":
             if not self.require_role("production"):
                 return
+            params = parse_qs(self.path.split("?", 1)[1] if "?" in self.path else "")
+            machine_id = params.get("machine", [MACHINE_IDS[0]])[0]
+            if machine_id not in MACHINE_IDS:
+                self.send_json({"error": "Máquina inválida."}, 400)
+                return
             try:
-                chart_data = get_recent_chart_data()
+                chart_data = get_recent_chart_data(machine_id)
                 self.send_json(chart_data)
             except Exception as error:
                 print(f"Erro ao consultar os dados recentes dos gráficos: {error}")
@@ -234,8 +275,15 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
                 }, 503)
                 return
 
+            local_timezone = ZoneInfo("America/Sao_Paulo")
+            today = datetime.now(local_timezone).date()
+            day_start = datetime.combine(today, datetime.min.time(), local_timezone)
+            day_end = day_start + timedelta(days=1)
+            start_utc = day_start.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+            stop_utc = day_end.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
             query = f'''from(bucket: "{INFLUX_BUCKET}")
-  |> range(start: 0)
+  |> range(start: {start_utc}, stop: {stop_utc})
   |> filter(fn: (r) => r._measurement == "sensor_incident")
   |> pivot(rowKey: ["_time", "machine", "reason"], columnKey: ["_field"], valueColumn: "_value")
   |> keep(columns: ["_time", "machine", "reason", "temperature", "vibration"])
@@ -259,17 +307,90 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
                         incidents_result.append({
                             "timestamp": timestamp.isoformat().replace("+00:00", "Z"),
                             "machine": values.get("machine", "Não identificado"),
+                            "machine_name": MACHINE_NAMES.get(
+                                values.get("machine"),
+                                "Máquina não identificada",
+                            ),
                             "reason": values.get("reason", "incidente"),
                             "temperature": float(values.get("temperature", 0)),
                             "vibration": float(values.get("vibration", 0)),
                         })
 
-                self.send_json({"incidents": incidents_result})
+                self.send_json({
+                    "date": today.isoformat(),
+                    "incidents": incidents_result,
+                })
 
             except Exception as error:
                 print(f"Erro ao consultar incidentes no InfluxDB: {error}")
                 self.send_json({
                     "error": "Não foi possível consultar o histórico no InfluxDB."
+                }, 500)
+
+            return
+
+        if route == "/api/incidents/report":
+            if not self.require_role("analyst"):
+                return
+
+            token = os.environ.get("INFLUX_TOKEN")
+            if not token:
+                self.send_json({"error": "INFLUX_TOKEN não configurado."}, 503)
+                return
+
+            local_timezone = ZoneInfo("America/Sao_Paulo")
+            now = datetime.now(local_timezone)
+            month_start = now.replace(
+                day=1,
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0,
+            )
+            start_utc = month_start.astimezone(timezone.utc).isoformat().replace(
+                "+00:00",
+                "Z",
+            )
+            stop_utc = now.astimezone(timezone.utc).isoformat().replace(
+                "+00:00",
+                "Z",
+            )
+            query = f'''from(bucket: "{INFLUX_BUCKET}")
+  |> range(start: {start_utc}, stop: {stop_utc})
+  |> filter(fn: (r) => r._measurement == "sensor_incident")
+  |> pivot(rowKey: ["_time", "machine", "reason"], columnKey: ["_field"], valueColumn: "_value")
+  |> keep(columns: ["_time", "machine", "reason", "temperature", "vibration"])
+  |> sort(columns: ["_time"], desc: true)'''
+
+            try:
+                with InfluxDBClient(
+                    url=INFLUX_URL,
+                    token=token,
+                    org=INFLUX_ORG,
+                ) as client:
+                    tables = client.query_api().query(query, org=INFLUX_ORG)
+                records = [
+                    record
+                    for table in tables
+                    for record in table.records
+                ]
+                workbook = build_incidents_workbook(records, local_timezone)
+                self.send_response(200)
+                self.send_header(
+                    "Content-Type",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+                self.send_header(
+                    "Content-Disposition",
+                    'attachment; filename="incidentes.xlsx"',
+                )
+                self.send_header("Content-Length", str(len(workbook)))
+                self.end_headers()
+                self.wfile.write(workbook)
+            except Exception as error:
+                print(f"Erro ao gerar o relatório mensal de incidentes: {error}")
+                self.send_json({
+                    "error": "Não foi possível gerar o relatório mensal de incidentes."
                 }, 500)
 
             return
@@ -281,16 +402,22 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
         if not self.require_role("production"):
             return
 
+        params = parse_qs(self.path.split("?", 1)[1] if "?" in self.path else "")
+        machine_id = params.get("machine", [MACHINE_IDS[0]])[0]
+        if machine_id not in MACHINE_IDS:
+            self.send_json({"error": "Máquina inválida."}, 400)
+            return
+
         with sample_lock:
-            samples = list(live_samples)
-            sample_count = live_sample_count
+            samples = list(live_samples[machine_id])
+            sample_count = live_sample_count[machine_id]
 
         if not samples:
             self.send_error(503, "Leituras dos sensores ainda não disponíveis")
             return
 
         try:
-            machine_stops_today = get_machine_stops_today_count()
+            machine_stops_today = get_machine_stops_today_count(machine_id)
         except Exception as error:
             print(f"Erro ao consultar paradas da máquina no InfluxDB: {error}")
             self.send_json({
@@ -299,6 +426,7 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
             return
 
         self.send_json({
+            "machine": machine_id,
             "samples": samples,
             "total_samples": sample_count,
             "machine_stops_today": machine_stops_today,
@@ -371,7 +499,7 @@ class ProjectRequestHandler(SimpleHTTPRequestHandler):
         )
 
 
-def get_machine_stops_today_count():
+def get_machine_stops_today_count(machine_id):
     token = os.environ.get("INFLUX_TOKEN")
     if not token:
         raise RuntimeError("INFLUX_TOKEN não configurado.")
@@ -386,6 +514,7 @@ def get_machine_stops_today_count():
     query = f'''from(bucket: "{INFLUX_BUCKET}")
   |> range(start: {start_utc}, stop: {stop_utc})
   |> filter(fn: (r) => r._measurement == "sensor_incident")
+  |> filter(fn: (r) => r.machine == "{machine_id}")
   |> filter(fn: (r) => r.reason == "temperatura_e_vibracao")
   |> filter(fn: (r) => r._field == "incident")
   |> group()
@@ -401,7 +530,7 @@ def get_machine_stops_today_count():
     return sum(int(record.get_value()) for table in tables for record in table.records)
 
 
-def get_recent_chart_data():
+def get_recent_chart_data(machine_id):
     token = os.environ.get("INFLUX_TOKEN")
     if not token:
         raise RuntimeError("INFLUX_TOKEN não configurado.")
@@ -409,6 +538,7 @@ def get_recent_chart_data():
     samples_query = f'''from(bucket: "{INFLUX_BUCKET}")
   |> range(start: -10m)
   |> filter(fn: (r) => r._measurement == "sensor_reading")
+  |> filter(fn: (r) => r.machine == "{machine_id}")
   |> filter(fn: (r) => r._field == "temperature" or r._field == "vibration")
   |> group(columns: ["machine", "_field"])
   |> aggregateWindow(every: 1m, fn: mean, createEmpty: false)
@@ -435,92 +565,106 @@ def get_recent_chart_data():
                 continue
 
             samples.append({
+                "machine": machine_id,
                 "timestamp": record.get_time().isoformat().replace("+00:00", "Z"),
                 "temperature": float(temperature),
                 "vibration": float(vibration),
             })
 
-    return {"samples": samples}
-
-
-def load_historical_samples():
-    """Carrega o histórico existente, sem executar o simulador CLI."""
-    global live_sample_count
-
-    history_file = DATA_DIR / "sensor_data.json"
-
-    if not history_file.exists():
-        return
-
-    try:
-        history = json.loads(history_file.read_text(encoding="utf-8"))
-        temperature = history["temperature"]
-        vibration = history["vibration"]
-
-        rows = list(zip(
-            temperature["timestamps"],
-            temperature["values"],
-            vibration["values"],
-        ))[-60:]
-
-        with sample_lock:
-            for timestamp, temp_value, vib_value in rows:
-                live_samples.append({
-                    "sequence": live_sample_count,
-                    "timestamp": timestamp,
-                    "temperature": temp_value,
-                    "vibration": vib_value,
-                    "temperature_threshold": TEMPERATURE_THRESHOLD_C,
-                    "vibration_threshold": VIBRATION_THRESHOLD_G,
-                })
-                live_sample_count += 1
-
-        print(f"Histórico carregado: {len(rows)} leituras.")
-
-    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
-        print(f"Aviso: não foi possível carregar o histórico: {error}")
+    return {"machine": machine_id, "samples": samples}
 
 
 def generate_samples(stop_event, mqtt_client):
-    global live_sample_count
-
     sample_index = 0
     next_sample_at = time.monotonic()
+    scheduled_day = None
+    scheduled_incidents = []
+    active_incidents = {}
 
     while not stop_event.is_set():
-        temperature, vibration = generate_live_sample(sample_index)
-
         recorded_at = datetime.now().astimezone()
-        timestamp = recorded_at.isoformat(timespec="seconds")
-
-        with sample_lock:
-            sample = {
-                "sequence": live_sample_count,
-                "timestamp": timestamp,
-                "temperature": temperature,
-                "vibration": vibration,
-                "temperature_threshold": TEMPERATURE_THRESHOLD_C,
-                "vibration_threshold": VIBRATION_THRESHOLD_G,
-            }
-
-            live_samples.append(sample)
-            live_sample_count += 1
-
-        payload = json.dumps(sample, ensure_ascii=False)
-
-        try:
-            result = mqtt_client.publish(
-                MQTT_TOPIC,
-                payload=payload,
-                qos=1,
-                retain=False,
+        local_now = recorded_at.astimezone(ZoneInfo("America/Sao_Paulo"))
+        if scheduled_day != local_now.date():
+            scheduled_day = local_now.date()
+            next_day = datetime.combine(
+                scheduled_day + timedelta(days=1),
+                datetime.min.time(),
+                local_now.tzinfo,
             )
+            scheduled_incidents = [
+                {
+                    "start_at": start_at,
+                    "machine": machine_id,
+                    "reason": reason,
+                    "started": False,
+                }
+                for start_at, machine_id, reason in build_live_incident_schedule(
+                    local_now,
+                    next_day,
+                    MACHINE_IDS,
+                )
+            ]
 
-            if result.rc != mqtt.MQTT_ERR_SUCCESS:
-                print(f"Falha ao publicar MQTT. Código: {result.rc}")
+        timestamp = recorded_at.isoformat(timespec="seconds")
+        for incident in scheduled_incidents:
+            if not incident["started"] and recorded_at >= incident["start_at"]:
+                active_incidents[incident["machine"]] = (incident["reason"], 10)
+                incident["started"] = True
 
-        except Exception as error:
-            print(f"Erro na publicação MQTT: {error}")
+        for machine_index, machine_id in enumerate(MACHINE_IDS):
+            temperature, vibration = generate_live_sample(
+                sample_index,
+                machine_index,
+            )
+            active_incident = active_incidents.get(machine_id)
+            if active_incident:
+                reason, remaining_samples = active_incident
+                if reason in ("temperatura", "temperatura_e_vibracao"):
+                    temperature = TEMPERATURE_THRESHOLD_C + 2.0
+                if reason in ("vibracao", "temperatura_e_vibracao"):
+                    vibration = VIBRATION_THRESHOLD_G + 0.1
+
+            with sample_lock:
+                sample = {
+                    "machine": machine_id,
+                    "sequence": live_sample_count[machine_id],
+                    "timestamp": timestamp,
+                    "temperature": temperature,
+                    "vibration": vibration,
+                    "temperature_threshold": TEMPERATURE_THRESHOLD_C,
+                    "vibration_threshold": VIBRATION_THRESHOLD_G,
+                }
+
+                live_samples[machine_id].append(sample)
+                live_sample_count[machine_id] += 1
+
+            payload = json.dumps(sample, ensure_ascii=False)
+
+            try:
+                result = mqtt_client.publish(
+                    MQTT_TOPIC,
+                    payload=payload,
+                    qos=1,
+                    retain=False,
+                )
+
+                if result.rc != mqtt.MQTT_ERR_SUCCESS:
+                    print(
+                        f"Falha ao publicar leitura de {machine_id}. "
+                        f"Código: {result.rc}"
+                    )
+
+            except Exception as error:
+                print(f"Erro na publicação MQTT de {machine_id}: {error}")
+
+            if active_incident:
+                if remaining_samples <= 1:
+                    active_incidents.pop(machine_id, None)
+                else:
+                    active_incidents[machine_id] = (
+                        reason,
+                        remaining_samples - 1,
+                    )
 
         sample_index += 1
         next_sample_at += 1.0
@@ -529,8 +673,7 @@ def generate_samples(stop_event, mqtt_client):
 
 def main():
     initialize_auth_database()
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    load_historical_samples()
+    seed_demo_data()
 
     mqtt_client = mqtt.Client(
         callback_api_version=mqtt.CallbackAPIVersion.VERSION2,

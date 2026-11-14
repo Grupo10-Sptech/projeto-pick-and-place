@@ -40,22 +40,19 @@
         <span class="dot"></span>
         <span id="statusText">Verificando sistema</span>
       </div>
-      <div class="history-notifications" id="alertBell" role="img"
-        aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
-          <path d="M10 21h4"></path>
-        </svg>
-        <span class="history-notifications-count" id="alertCount">--</span>
+      <div class="history-notifications-wrap">
+        <button class="history-notifications" id="alertBell" type="button"
+          aria-haspopup="dialog" aria-expanded="false"
+          aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+            <path d="M10 21h4"></path>
+          </svg>
+          <span class="history-notifications-count" id="alertCount">--</span>
+        </button>
       </div>
     </div>
   </header>
-
-  <nav class="page-nav" aria-label="Navegação principal">
-    <a class="page-nav-link" href="index.html">Dashboard</a>
-    <a class="page-nav-link" href="historico.html">Histórico de Incidentes</a>
-    <a class="page-nav-link active" href="gerencial.html" aria-current="page">Painel Gerencial</a>
-  </nav>
 
   <main class="views">
     <section class="management-content">
@@ -64,7 +61,7 @@
         <div>
           <p class="panel-label">GESTÃO · INDICADORES</p>
           <h2>Visão executiva</h2>
-          <p>Indicadores para acompanhamento e tomada de decisão.</p>
+          <p>Indicadores consolidados das 10 máquinas para acompanhamento e tomada de decisão.</p>
         </div>
 
         <select id="periodFilter" aria-label="Período de análise">
@@ -78,15 +75,10 @@
       <div class="management-cards">
 
         <article class="management-card">
-          <span>Total de incidentes</span>
-          <strong id="totalIncidents">--</strong>
-          <small>Ocorrências no período</small>
-        </article>
-
-        <article class="management-card">
-          <span>Principal causa</span>
-          <strong id="primaryCause">--</strong>
-          <small id="primaryCauseCount">-- ocorrências</small>
+          <span>Maior gasto no período</span>
+          <strong id="highestCostAmount">--</strong>
+          <small id="highestCostDay">Sem gastos no período</small>
+          <small id="periodTotalCost">Total no período: --</small>
         </article>
 
         <article class="management-card">
@@ -101,37 +93,34 @@
           <small id="busiestDayCount">-- ocorrências</small>
         </article>
 
-        <article class="management-card">
-          <span>Maior pico de temperatura</span>
-          <strong id="temperaturePeak">--</strong>
-          <small id="temperaturePeakTime">Data e horário: --</small>
-        </article>
-
-        <article class="management-card">
-          <span>Maior pico de vibração</span>
-          <strong id="vibrationPeak">--</strong>
-          <small id="vibrationPeakTime">Data e horário: --</small>
-        </article>
-
       </div>
 
       <div class="management-panels">
 
         <section class="management-panel">
-          <h3>Incidentes por dia</h3>
-          <div id="dailyIncidents" class="management-chart">
+          <h3>Produção, manutenção e incidentes</h3>
+          <div id="productionChart" class="management-chart">
             Carregando dados...
+          </div>
+          <div class="management-chart-legend">
+            <span><i class="chart-legend-swatch downtime"></i>Parada para manutenção</span>
+            <span><i class="chart-legend-swatch incidents"></i>Incidentes combinados</span>
           </div>
         </section>
 
         <section class="management-panel">
-          <h3>Incidentes por tipo</h3>
-          <div id="incidentReasons" class="management-chart">
+          <h3>Custo das paradas e recorrência</h3>
+          <div id="downtimeCostChart" class="management-chart">
             Carregando dados...
+          </div>
+          <div class="management-chart-legend">
+            <span><i class="chart-legend-swatch cumulative-cost"></i>Custo acumulado</span>
+            <span><i class="chart-legend-swatch recurrence"></i>2+ incidentes combinados no mesmo dia</span>
           </div>
         </section>
 
       </div>
+      <div id="managementMessage" class="management-message" role="status" aria-live="polite"></div>
 
     </section>
   </main>

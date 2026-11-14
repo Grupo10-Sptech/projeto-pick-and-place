@@ -32,17 +32,29 @@ def generate_vibration(index: int, drift: float = 0.0) -> float:
     return round(max(0.18, value), 3)
 
 
-def generate_live_sample(index: int) -> tuple[float, float]:
-    drift_factor = 0.12 * math.sin(index / 60.0)
-    temperature = generate_temperature(index, drift_factor)
-    vibration = generate_vibration(index, drift_factor * 0.35)
+def generate_live_sample(index: int, machine_index: int = 0) -> tuple[float, float]:
+    phase = index + machine_index * 17
+    drift_factor = 0.1 * math.sin(phase / 60.0)
+    randomizer = random.Random((machine_index + 1) * 1_000_003 + index)
 
-    anomaly_phase = (index - 20) % 120
-    if index >= 20 and anomaly_phase < 8:
-        temperature = round(temperature + 10.0, 2)
-        vibration = round(vibration + 0.8, 3)
+    temperature = (
+        28.5
+        + machine_index * 0.28
+        + 2.2 * math.sin(phase / 18.0)
+        + 0.6 * math.sin(phase / 95.0)
+        + drift_factor
+        + randomizer.uniform(-0.55, 0.55)
+    )
+    vibration = (
+        0.62
+        + machine_index * 0.015
+        + 0.14 * math.sin(phase / 11.0)
+        + 0.05 * math.sin(phase / 4.0)
+        + drift_factor * 0.3
+        + randomizer.uniform(-0.045, 0.045)
+    )
 
-    return temperature, vibration
+    return round(temperature, 2), round(max(0.18, vibration), 3)
 
 
 def average(values):

@@ -44,6 +44,8 @@ Abra o endereço mostrado pelo Vite (por padrão, `http://localhost:5173/`). Ap�
 - Histórico de incidentes: `http://localhost:5173/historico.html`
 - Painel gerencial: `http://localhost:5173/gerencial.html`
 
+No Histórico de Incidentes, o botão **Baixar relatório** baixa `incidentes.xlsx` com os incidentes do mês vigente, incluindo data, máquina, temperatura, vibração e indicação de incidente combinado.
+
 O Vite atualiza a página automaticamente quando os arquivos da interface são alterados. Para encerrar todos os processos, pressione `Ctrl+C` no terminal.
 
 ## Serviços locais
@@ -53,6 +55,19 @@ O ambiente de desenvolvimento usa um token e uma senha locais definidos para a c
 Os dados do InfluxDB ficam em volumes Docker e são preservados ao encerrar `npm run dev`. Para reiniciar os serviços sem apagar esses dados, execute novamente `npm run dev`.
 
 Incidentes novos são gravados diretamente no InfluxDB pelo consumidor MQTT. Histórico, contadores e indicadores também são consultados no banco; o simulador não cria nem atualiza `data/incidents.json`. Se esse arquivo existir de uma execução anterior, ele permanece como arquivo legado e não é mais utilizado.
+
+### Dados de demonstração das máquinas
+
+O projeto simula 10 máquinas, cada uma com leituras independentes de temperatura e vibração sincronizadas no mesmo instante. Ao iniciar com o bucket vazio, o backend carrega sete dias de leituras a cada cinco minutos e gera aleatoriamente de um a cinco incidentes por dia, distribuídos entre máquinas e sensores. A simulação ao vivo segue a mesma regra: pelo menos um e no máximo cinco incidentes por dia no conjunto das máquinas. Incidentes ao vivo exigem cinco leituras anormais consecutivas.
+
+Para apagar e recriar os dados de demonstração, encerre `npm run dev` e execute:
+
+```powershell
+npm run reset:demo
+npm run dev
+```
+
+Esse comando apaga as medidas `sensor_reading` e `sensor_incident` do bucket local `sensores` e as substitui por sete dias de dados gerados aleatoriamente. O banco SQLite de usuários e sessões não é alterado.
 
 ## Gerar os arquivos de produção
 

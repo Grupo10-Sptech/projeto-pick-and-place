@@ -6,9 +6,9 @@ import {
 
 await requireDashboardRole("production");
 
-const dataUrl = './data/sensor_data.json';
 const liveSampleUrl = './api/sensors/sample';
 const minuteSamplesUrl = './api/sensors/minute-samples';
+const machineFilter = document.getElementById('machineFilter');
 const maxChartSamples = 60;
 const maxMinuteChartSamples = 10;
 const chartRefreshInterval = 10000;
@@ -227,6 +227,8 @@ let vibChart;
 let temperatureValues = [];
 let vibrationValues = [];
 let sampleCount = 0;
+let livePollTimeout;
+let minutePollTimeout;
 
 function updateLiveWindow(samples, totalSamples, machineStopsToday) {
   const recentSamples = samples.slice(-maxChartSamples);
@@ -255,7 +257,8 @@ function updateLiveWindow(samples, totalSamples, machineStopsToday) {
 
 async function pollLiveSample() {
   try {
-    const response = await fetch(liveSampleUrl, { cache: 'no-store' });
+    const machine = encodeURIComponent(machineFilter.value);
+    const response = await fetch(`${liveSampleUrl}?machine=${machine}`, { cache: 'no-store' });
     if (response.status === 401) {
       window.location.replace("/login.html");
       return;
@@ -285,13 +288,14 @@ async function pollLiveSample() {
     console.error(error);
     updateSystemStatus(false);
   } finally {
-    window.setTimeout(pollLiveSample, 10000);
+    livePollTimeout = window.setTimeout(pollLiveSample, 10000);
   }
 }
 
 async function pollMinuteChart() {
   try {
-    const response = await fetch(minuteSamplesUrl, { cache: 'no-store' });
+    const machine = encodeURIComponent(machineFilter.value);
+    const response = await fetch(`${minuteSamplesUrl}?machine=${machine}`, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`Erro ao consultar dados por minuto: ${response.status}`);
     }
@@ -332,52 +336,50 @@ async function pollMinuteChart() {
   } catch (error) {
     console.error(error);
   } finally {
-    window.setTimeout(pollMinuteChart, chartRefreshInterval);
+    minutePollTimeout = window.setTimeout(pollMinuteChart, chartRefreshInterval);
   }
 }
 
 async function loadData() {
-  try {
-    const response = await fetch(dataUrl, { cache: 'no-store' });
-    if (!response.ok) throw new Error(`Erro ao carregar dados: ${response.status}`);
-    const payload = await response.json();
+  tempChart = new Chart(document.getElementById('temperatureChart'), buildChartConfig(
+    'line',
+    [],
+    [],
+    'Temperatura',
+    '#42dfd0',
+    true
+  ));
 
-    const timestamps = payload.temperature.timestamps.slice(-maxChartSamples);
-    temperatureValues = payload.temperature.values.slice(-maxChartSamples);
-    vibrationValues = payload.vibration.values.slice(-maxChartSamples);
-    sampleCount = Math.max(payload.temperature.values.length, payload.vibration.values.length);
-    updateSummary(sampleCount);
-    updateKpis(timestamps, temperatureValues, vibrationValues);
+  vibChart = new Chart(document.getElementById('vibrationChart'), buildChartConfig(
+    'line',
+    [],
+    [],
+    'Vibração',
+    '#82aaff',
+    false
+  ));
 
-    tempChart = new Chart(document.getElementById('temperatureChart'), buildChartConfig(
-      'line',
-      [],
-      [],
-      'Temperatura',
-      '#42dfd0',
-      true
-    ));
-
-    vibChart = new Chart(document.getElementById('vibrationChart'), buildChartConfig(
-      'line',
-      [],
-      [],
-      'Vibração',
-      '#82aaff',
-      false
-    ));
-
-    applyTheme(document.documentElement.dataset.theme);
-    window.addEventListener('resize', () => {
-      tempChart.resize();
-      vibChart.resize();
-    });
+  applyTheme(document.documentElement.dataset.theme);
+  window.addEventListener('resize', () => {
+    tempChart.resize();
+    vibChart.resize();
+  });
+  machineFilter.addEventListener('change', () => {
+    window.clearTimeout(livePollTimeout);
+    window.clearTimeout(minutePollTimeout);
+    temperatureValues = [];
+    vibrationValues = [];
+    tempChart.data.labels = [];
+    tempChart.data.datasets[0].data = [];
+    vibChart.data.labels = [];
+    vibChart.data.datasets[0].data = [];
+    tempChart.update('none');
+    vibChart.update('none');
     pollMinuteChart();
     pollLiveSample();
-  } catch (error) {
-    console.error(error);
-    updateSystemStatus(false);
-  }
+  });
+  pollMinuteChart();
+  pollLiveSample();
 }
 
 setupThemeToggle();

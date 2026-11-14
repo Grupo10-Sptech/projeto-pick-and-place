@@ -31,80 +31,103 @@
           <img class="brand-logo brand-logo-dark"
             src="images/vibra-data-logo-dark.png"
             alt="Vibra Data — Dados que movimentam decisões" />
-          <h1>Histórico de Incidentes</h1>
+          <h1 id="historyPageTitle">Incidentes em --/--/----</h1>
         </div>
 
         <div class="status-group">
+          <button class="incident-report-button" id="downloadIncidentReport" type="button">
+            Baixar relatório
+          </button>
+          <span class="incident-report-message" id="incidentReportMessage" role="status" aria-live="polite"></span>
           <div class="status-badge offline" id="systemStatus" role="status" aria-live="polite">
             <span class="dot"></span>
             <span id="statusText">Verificando sistema</span>
           </div>
-          <div class="history-notifications" id="alertBell" role="img" aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
-              <path d="M10 21h4"></path>
-            </svg>
-            <span class="history-notifications-count" id="alertCount">--</span>
+          <div class="history-notifications-wrap">
+            <button class="history-notifications" id="alertBell" type="button"
+              aria-haspopup="dialog" aria-expanded="false"
+              aria-label="Alertas registrados: carregando" title="Alertas registrados: carregando">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+                <path d="M10 21h4"></path>
+              </svg>
+              <span class="history-notifications-count" id="alertCount">--</span>
+            </button>
           </div>
         </div>
       </header>
 
-      <nav class="page-nav" aria-label="Navegação principal">
-        <a class="page-nav-link" href="index.html">Dashboard</a>
-        <a class="page-nav-link active" href="historico.html" aria-current="page">Histórico de Incidentes</a>
-        <a class="page-nav-link" href="gerencial.html">Painel Gerencial</a>
-      </nav>
-
       <main class="views">
         <section class="view-panel active history-view">
-          <section class="sensor-replacement-cards" aria-label="Trocas estimadas dos sensores">
-            <article class="sensor-replacement-card vibration-panel">
-              <span>Trocas do sensor de vibração</span>
-              <strong id="vibrationSensorReplacements">--</strong>
-              <small id="vibrationSensorReplacementProgress">Calculando incidentes...</small>
-            </article>
-
-            <article class="sensor-replacement-card temperature-panel">
-              <span>Trocas do sensor de temperatura</span>
-              <strong id="temperatureSensorReplacements">--</strong>
-              <small id="temperatureSensorReplacementProgress">Calculando incidentes...</small>
-            </article>
-          </section>
-
           <section class="history-columns">
 
-          <section class="history-panel vibration-panel">
-            <div class="history-panel-header">
-              <div>
-                <p class="panel-label">MONITORAMENTO · VIBRAÇÃO</p>
-                <h3>Incidentes de vibração</h3>
+            <section class="history-panel factory-panel" aria-labelledby="factoryTitle">
+              <div class="history-panel-header">
+                <div>
+                  <p class="panel-label">PLANTA INDUSTRIAL · VISÃO GERAL</p>
+                  <h3 id="factoryTitle">Máquinas e sensores</h3>
+                </div>
               </div>
-              <span class="incident-count" id="vibrationTotal">0</span>
-            </div>
 
-            <div class="incident-list-wrap">
-              <div class="incident-list" id="vibrationList">
-                <p class="table-message">Carregando incidentes...</p>
+              <div class="factory-legend" aria-label="Legenda dos sensores">
+                <span><i class="factory-legend-dot temperature"></i>Temperatura</span>
+                <span><i class="factory-legend-dot vibration"></i>Vibração</span>
+                <span><i class="factory-legend-dot incident"></i>Incidente</span>
               </div>
-            </div>
+
+              <div class="factory-map-wrap">
+                <svg class="factory-map" viewBox="0 0 800 540"
+                  preserveAspectRatio="none" aria-hidden="true">
+                  <g class="factory-structure">
+                    <path class="factory-wall" d="M28 52H772V514H28V52Z" />
+                    <path class="factory-wall" d="M38 104H610V504H38" />
+                    <path class="factory-wall" d="M324 104V504M38 184H610M38 264H610M38 344H610M38 424H610" />
+                    <path class="factory-wall" d="M610 104V504M610 204H760M610 310H760M610 414H760" />
+                    <path class="factory-wall-light" d="M632 104V204M682 104V204M732 104V204M632 214V300M682 214V300M732 214V300M632 320V404M682 320V404M732 320V404M632 424V504M682 424V504M732 424V504" />
+                    <path class="factory-wall-light" d="M28 76H772M54 52V76M196 52V76M338 52V76M480 52V76M622 52V76" />
+                    <path class="factory-wall-dash" d="M324 104V504M38 264H610" />
+                    <text class="factory-zone-label" x="48" y="96">ÁREA DE PRODUÇÃO</text>
+                    <text class="factory-zone-label" x="625" y="96">ÁREAS DE APOIO</text>
+                  </g>
+                </svg>
+                <div id="factoryMachineNodes" class="factory-machine-nodes"
+                  role="group" aria-label="Dez máquinas e seus sensores de temperatura e vibração"></div>
+              </div>
+            </section>
+
+            <section class="history-panel vibration-panel">
+              <div class="history-panel-header">
+                <div>
+                  <p class="panel-label">MONITORAMENTO · VIBRAÇÃO</p>
+                  <h3>Incidentes de vibração</h3>
+                </div>
+                <span class="incident-count" id="vibrationTotal">0</span>
+              </div>
+
+              <div class="incident-list-wrap">
+                <div class="incident-list" id="vibrationList">
+                  <p class="table-message">Tudo funcional por aqui.</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="history-panel temperature-panel">
+              <div class="history-panel-header">
+                <div>
+                  <p class="panel-label">MONITORAMENTO · TEMPERATURA</p>
+                  <h3>Incidentes de temperatura</h3>
+                </div>
+                <span class="incident-count" id="temperatureTotal">0</span>
+              </div>
+
+              <div class="incident-list-wrap">
+                <div class="incident-list" id="temperatureList">
+                  <p class="table-message">Tudo funcional por aqui.</p>
+                </div>
+              </div>
+            </section>
+
           </section>
-
-          <section class="history-panel temperature-panel">
-            <div class="history-panel-header">
-              <div>
-                <p class="panel-label">MONITORAMENTO · TEMPERATURA</p>
-                <h3>Incidentes de temperatura</h3>
-              </div>
-              <span class="incident-count" id="temperatureTotal">0</span>
-            </div>
-
-            <div class="incident-list-wrap">
-              <div class="incident-list" id="temperatureList">
-                <p class="table-message">Carregando incidentes...</p>
-              </div>
-            </div>
-          </section>
-
         </section>
       </main>
     </div>

@@ -2,7 +2,7 @@
 import os
 from collections import Counter
 from influxdb_client import InfluxDBClient
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 URL = "http://127.0.0.1:8086"
@@ -10,6 +10,14 @@ ORG = "projeto-iot"
 BUCKET = "sensores"
 
 VALID_PERIODS = ("24h", "7d", "30d", "90d")
+PERIOD_DURATIONS = {
+    "24h": timedelta(hours=24),
+    "7d": timedelta(days=7),
+    "30d": timedelta(days=30),
+    "90d": timedelta(days=90)
+}
+PLANNED_HOURS_PER_DAY = 20
+DOWNTIME_COST_PER_INCIDENT = 150
 
 
 def get_peak(api, period, field):
@@ -71,24 +79,60 @@ from(bucket: "{BUCKET}")
                 })
 
         daily = Counter()
+        combined_daily = Counter()
         reasons = Counter()
 
-        today = datetime.now(ZoneInfo("America/Sao_Paulo")).date()
+        timezone = ZoneInfo("America/Sao_Paulo")
+        end_time = datetime.now(timezone)
+        start_time = end_time - PERIOD_DURATIONS[period]
+        day = start_time.date()
+        planned_hours_daily = {}
 
-        for i in range(6, -1, -1):
-            day = today - timedelta(days=i)
-            daily[day.isoformat()] = 0
+        while day <= end_time.date():
+            day_start = datetime.combine(day, time.min, tzinfo=timezone)
+            day_end = day_start + timedelta(days=1)
+            overlap_start = max(start_time, day_start)
+            overlap_end = min(end_time, day_end)
+            day_key = day.isoformat()
+
+            daily[day_key] = 0
+            combined_daily[day_key] = 0
+            planned_hours_daily[day_key] = round(
+                max((overlap_end - overlap_start).total_seconds(), 0)
+                / 3600
+                * PLANNED_HOURS_PER_DAY
+                / 24,
+                2
+            )
+            day += timedelta(days=1)
 
         for incident in incidents:
             local_time = datetime.fromisoformat(
                 incident["time"]
-            ).astimezone(ZoneInfo("America/Sao_Paulo"))
+            ).astimezone(timezone)
 
             day = local_time.date().isoformat()
             reason = incident["reason"] or "Não informado"
 
+            if day not in daily:
+                continue
+
             daily[day] += 1
             reasons[reason] += 1
+            if reason == "temperatura_e_vibracao":
+                combined_daily[day] += 1
+
+        most_expensive_day = None
+        if combined_daily and max(combined_daily.values()) > 0:
+            day, incident_count = max(
+                combined_daily.items(),
+                key=lambda item: item[1]
+            )
+            most_expensive_day = {
+                "date": day,
+                "cost": incident_count * DOWNTIME_COST_PER_INCIDENT,
+                "incident_count": incident_count,
+            }
 
         most_incident_day = None
         if daily:
@@ -113,7 +157,10 @@ from(bucket: "{BUCKET}")
             "incidents": {
                 "total": len(incidents),
                 "daily": dict(sorted(daily.items())),
+                "combined_daily": dict(sorted(combined_daily.items())),
+                "planned_hours_daily": dict(sorted(planned_hours_daily.items())),
                 "reasons": dict(reasons),
+                "most_expensive_day": most_expensive_day,
                 "most_incident_day": most_incident_day,
                 "primary_cause": primary_cause,
                 "combined_total": reasons.get(
